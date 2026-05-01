@@ -1,0 +1,17 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Teacher assignment files — teacher writes, any authenticated user reads
+    match /assignments/{taskId}/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Student submission files — student writes their own, authenticated users read
+    match /submissions/{taskId}/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+  }
+}

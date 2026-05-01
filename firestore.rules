@@ -1,0 +1,86 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Users collection - PERMISSIVE for testing
+    match /users/{userId} {
+      // Allow all operations for authenticated users during development
+      allow read, write: if isAuthenticated();
+      
+      // Allow unauthenticated reads for username lookups
+      allow read: if request.auth == null;
+    }
+    
+    // Tasks collection
+    match /tasks/{taskId} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    // Schedules collection
+    match /schedules/{scheduleId} {
+      allow read, write: if isAuthenticated();
+    }
+    
+    // Group tasks collection
+    match /groupTasks/{groupTaskId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Task messages collection
+    match /taskMessages/{messageId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Helper: check if requesting user is a teacher
+    function isTeacher() {
+      return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'teacher';
+    }
+
+    // Study groups
+    match /studyGroups/{groupId} {
+      allow read: if isAuthenticated() && (request.auth.uid in resource.data.memberUids || isTeacher());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (request.auth.uid in resource.data.memberUids || isTeacher());
+      allow delete: if isAuthenticated() && request.auth.uid == resource.data.ownerUid;
+    }
+
+    // Group chat messages
+    match /groupMessages/{msgId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Group shared tasks
+    match /groupSharedTasks/{taskId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Announcements - all authenticated users can read, only teachers can create/update/delete
+    match /announcements/{announcementId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isTeacher();
+    }
+
+    // Teacher-assigned tasks - teachers write, assigned students read
+    match /assignedTasks/{taskId} {
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isTeacher();
+    }
+
+    // Assignment submissions - students create their own, teachers read all
+    match /assignedTaskSubmissions/{subId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && request.resource.data.studentUid == request.auth.uid;
+      allow update, delete: if false;
+    }
+    
+  }
+}

@@ -4,17 +4,17 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 export default function LoginScreen() {
@@ -69,14 +69,8 @@ export default function LoginScreen() {
       const user = await signIn(email, password);
       console.log('✅ Sign in successful! User:', user.email);
       console.log('👤 User UID:', user.uid);
-      
-      // Show success message before navigation
-      Alert.alert('Success', 'Login successful! Redirecting to dashboard...');
-      
-      // Small delay to show the success message
-      setTimeout(() => {
-        router.replace('/(tabs)');
-      }, 1000);
+
+      router.replace('/(tabs)');
       
     } catch (error: any) {
       console.error('❌ Sign in error:', error);

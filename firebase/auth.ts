@@ -1,18 +1,22 @@
 import * as Crypto from 'expo-crypto';
 import * as WebBrowser from 'expo-web-browser';
 import {
-  createUserWithEmailAndPassword,
-  GoogleAuthProvider,
-  onAuthStateChanged,
-  sendPasswordResetEmail,
-  signInWithCredential,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  signOut,
-  updateProfile,
-  User
+    createUserWithEmailAndPassword,
+    EmailAuthProvider,
+    GoogleAuthProvider,
+    onAuthStateChanged,
+    reauthenticateWithCredential,
+    sendPasswordResetEmail,
+    signInWithCredential,
+    signInWithEmailAndPassword,
+    signInWithPopup,
+    signOut,
+    updateEmail,
+    updatePassword,
+    updateProfile,
+    User
 } from 'firebase/auth';
-import { collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, where } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
 import { auth, db } from './config';
 
 // Check if we're in a React Native environment
@@ -109,6 +113,44 @@ export async function logOut() {
 // Send password reset email
 export async function resetPassword(email: string) {
   await sendPasswordResetEmail(auth, email);
+}
+
+// Update profile fields in Firebase Auth + Firestore
+export async function updateUserProfile(uid: string, data: {
+  displayName?: string;
+  photoURL?: string;
+  username?: string;
+  email?: string;
+  age?: number | null;
+}) {
+  const currentUser = auth.currentUser;
+  if (currentUser) {
+    if (data.displayName || data.photoURL) {
+      await updateProfile(currentUser, {
+        ...(data.displayName ? { displayName: data.displayName } : {}),
+        ...(data.photoURL ? { photoURL: data.photoURL } : {}),
+      });
+    }
+    if (data.email && data.email !== currentUser.email) {
+      await updateEmail(currentUser, data.email);
+    }
+  }
+  const firestoreUpdate: Record<string, any> = { updatedAt: serverTimestamp() };
+  if (data.displayName) firestoreUpdate.displayName = data.displayName;
+  if (data.photoURL) firestoreUpdate.photoURL = data.photoURL;
+  if (data.username) firestoreUpdate.username = data.username.toLowerCase();
+  if (data.email) firestoreUpdate.email = data.email;
+  if (data.age !== undefined) firestoreUpdate.age = data.age;
+  await updateDoc(doc(db, 'users', uid), firestoreUpdate);
+}
+
+// Change password (requires current password for re-authentication)
+export async function changeUserPassword(currentPassword: string, newPassword: string) {
+  const currentUser = auth.currentUser;
+  if (!currentUser || !currentUser.email) throw new Error('No authenticated user');
+  const credential = EmailAuthProvider.credential(currentUser.email, currentPassword);
+  await reauthenticateWithCredential(currentUser, credential);
+  await updatePassword(currentUser, newPassword);
 }
 
 // Initialize Google Sign-In configuration

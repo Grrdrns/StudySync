@@ -2,6 +2,7 @@ import SimpleDatePicker from '@/components/SimpleDatePicker';
 import SimpleTimePicker from '@/components/SimpleTimePicker';
 import TaskDetail from '@/components/TaskDetail';
 import { useFirebase } from '@/contexts/FirebaseContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { db } from '@/firebase/config';
 import { Task, addTask, subscribeToTasks, toggleTaskDone } from '@/firebase/firestore';
 import { cancelTaskReminders, scheduleTaskReminders } from '@/utils/notifications';
@@ -30,14 +31,75 @@ const PRIORITY_COLOR: Record<Priority, string> = {
   Low: '#10B981',
 };
 
-const BG = '#0F172A';
-const SURFACE = '#1E293B';
-const BORDER = '#334155';
-const TEXT = '#F1F5F9';
-const MUTED = '#94A3B8';
-
 export default function TasksScreen() {
   const { user } = useFirebase();
+  const { isDark } = useTheme();
+  const BG = isDark ? '#0F172A' : '#F1F5F9';
+  const SURFACE = isDark ? '#1E293B' : '#FFFFFF';
+  const BORDER = isDark ? '#334155' : '#E2E8F0';
+  const TEXT = isDark ? '#F1F5F9' : '#0F172A';
+  const MUTED = isDark ? '#94A3B8' : '#64748B';
+  const st = useMemo(() => StyleSheet.create({
+    safe: { flex: 1, backgroundColor: BG },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 },
+    title: { color: TEXT, fontSize: 22, fontWeight: '800' },
+    subtitle: { color: MUTED, fontSize: 12, marginTop: 2 },
+    avatar: { width: 38, height: 38, borderRadius: 19, justifyContent: 'center', alignItems: 'center' },
+    avatarText: { color: '#fff', fontSize: 13, fontWeight: '700' },
+    searchRow: { paddingHorizontal: 16, paddingBottom: 10 },
+    searchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: SURFACE, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 12, paddingVertical: 10 },
+    searchInput: { flex: 1, color: TEXT, fontSize: 14 },
+    filterRow: { flexGrow: 0, marginBottom: 8 },
+    filterChip: { borderRadius: 20, borderWidth: 1, borderColor: BORDER, paddingVertical: 6, paddingHorizontal: 14, backgroundColor: SURFACE },
+    filterChipActive: { backgroundColor: '#6366F1', borderColor: '#6366F1' },
+    filterChipText: { color: MUTED, fontSize: 12, fontWeight: '600' },
+    filterChipTextActive: { color: '#fff' },
+    section: { gap: 10 },
+    sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    sectionTitle: { color: TEXT, fontSize: 15, fontWeight: '700' },
+    countBadge: { backgroundColor: '#6366F122', borderRadius: 99, paddingVertical: 2, paddingHorizontal: 8 },
+    countBadgeText: { color: '#818CF8', fontSize: 12, fontWeight: '700' },
+    card: { backgroundColor: SURFACE, borderRadius: 14, borderWidth: 1, borderColor: BORDER, padding: 14, gap: 8 },
+    cardTop: { flexDirection: 'row', justifyContent: 'space-between' },
+    priorityBadge: { borderRadius: 6, paddingVertical: 3, paddingHorizontal: 8 },
+    priorityBadgeText: { fontSize: 11, fontWeight: '700' },
+    cardTitle: { color: TEXT, fontSize: 15, fontWeight: '700' },
+    cardTitleDone: { textDecorationLine: 'line-through', color: MUTED },
+    cardMeta: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+    cardMetaText: { color: MUTED, fontSize: 12 },
+    cardBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    doneBtn: { padding: 2 },
+    doneBtnActive: {},
+    emptyText: { color: MUTED, fontSize: 13, textAlign: 'center', paddingVertical: 12 },
+    dateBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: BG, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 14, paddingVertical: 12 },
+    dateBtnText: { color: TEXT, fontSize: 14 },
+    collabSearchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: BG, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 12, paddingVertical: 10 },
+    collabSearchInput: { flex: 1, color: TEXT, fontSize: 13 },
+    collabDropdown: { backgroundColor: SURFACE, borderRadius: 12, borderWidth: 1, borderColor: BORDER, overflow: 'hidden' },
+    collabResultRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderBottomWidth: 1, borderBottomColor: BORDER },
+    collabAvatar: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#6366F1', justifyContent: 'center', alignItems: 'center' },
+    collabAvatarText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+    collabName: { color: TEXT, fontSize: 13, fontWeight: '600' },
+    collabEmail: { color: MUTED, fontSize: 11 },
+    collabChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+    collabChip: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#6366F122', borderRadius: 20, borderWidth: 1, borderColor: '#6366F144', paddingVertical: 5, paddingHorizontal: 10 },
+    collabChipText: { color: '#818CF8', fontSize: 12, fontWeight: '600' },
+    fab: { position: 'absolute', bottom: 24, right: 20, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#6366F1', borderRadius: 24, paddingVertical: 12, paddingHorizontal: 20, elevation: 4 },
+    fabText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+    overlay: { flex: 1, backgroundColor: '#00000088', justifyContent: 'flex-end' },
+    sheet: { backgroundColor: SURFACE, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 12 },
+    sheetTitle: { color: TEXT, fontSize: 18, fontWeight: '800', marginBottom: 4 },
+    fieldLabel: { color: MUTED, fontSize: 13, fontWeight: '500' },
+    fieldInput: { backgroundColor: BG, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 14, paddingVertical: 12, color: TEXT, fontSize: 14 },
+    priorityRow: { flexDirection: 'row', gap: 10 },
+    priorityBtn: { flex: 1, borderRadius: 10, borderWidth: 1.5, borderColor: BORDER, paddingVertical: 8, alignItems: 'center' },
+    priorityBtnText: { color: MUTED, fontSize: 13, fontWeight: '600' },
+    sheetActions: { flexDirection: 'row', gap: 12, marginTop: 8 },
+    cancelBtn: { flex: 1, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingVertical: 13, alignItems: 'center' },
+    cancelBtnText: { color: MUTED, fontSize: 14, fontWeight: '600' },
+    saveBtn: { flex: 1, borderRadius: 12, backgroundColor: '#6366F1', paddingVertical: 13, alignItems: 'center' },
+    saveBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+  }), [isDark]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -320,64 +382,3 @@ export default function TasksScreen() {
   );
 }
 
-const st = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: BG },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 },
-  title: { color: TEXT, fontSize: 22, fontWeight: '800' },
-  subtitle: { color: MUTED, fontSize: 12, marginTop: 2 },
-  avatar: { width: 38, height: 38, borderRadius: 19, justifyContent: 'center', alignItems: 'center' },
-  avatarText: { color: '#fff', fontSize: 13, fontWeight: '700' },
-  searchRow: { paddingHorizontal: 16, paddingBottom: 10 },
-  searchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: SURFACE, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 12, paddingVertical: 10 },
-  searchInput: { flex: 1, color: TEXT, fontSize: 14 },
-  filterRow: { flexGrow: 0, marginBottom: 8 },
-  filterChip: { borderRadius: 20, borderWidth: 1, borderColor: BORDER, paddingVertical: 6, paddingHorizontal: 14, backgroundColor: SURFACE },
-  filterChipActive: { backgroundColor: '#6366F1', borderColor: '#6366F1' },
-  filterChipText: { color: MUTED, fontSize: 12, fontWeight: '600' },
-  filterChipTextActive: { color: '#fff' },
-  section: { gap: 10 },
-  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionTitle: { color: TEXT, fontSize: 15, fontWeight: '700' },
-  countBadge: { backgroundColor: '#6366F122', borderRadius: 99, paddingVertical: 2, paddingHorizontal: 8 },
-  countBadgeText: { color: '#818CF8', fontSize: 12, fontWeight: '700' },
-  card: { backgroundColor: SURFACE, borderRadius: 14, borderWidth: 1, borderColor: BORDER, padding: 14, gap: 8 },
-  cardTop: { flexDirection: 'row', justifyContent: 'space-between' },
-  priorityBadge: { borderRadius: 6, paddingVertical: 3, paddingHorizontal: 8 },
-  priorityBadgeText: { fontSize: 11, fontWeight: '700' },
-  cardTitle: { color: TEXT, fontSize: 15, fontWeight: '700' },
-  cardTitleDone: { textDecorationLine: 'line-through', color: MUTED },
-  cardMeta: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  cardMetaText: { color: MUTED, fontSize: 12 },
-  cardBottom: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  doneBtn: { padding: 2 },
-  doneBtnActive: {},
-  emptyText: { color: MUTED, fontSize: 13, textAlign: 'center', paddingVertical: 12 },
-  dateBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: BG, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 14, paddingVertical: 12 },
-  dateBtnText: { color: TEXT, fontSize: 14 },
-  collabSearchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: BG, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 12, paddingVertical: 10 },
-  collabSearchInput: { flex: 1, color: TEXT, fontSize: 13 },
-  collabDropdown: { backgroundColor: SURFACE, borderRadius: 12, borderWidth: 1, borderColor: BORDER, overflow: 'hidden' },
-  collabResultRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderBottomWidth: 1, borderBottomColor: BORDER },
-  collabAvatar: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#6366F1', justifyContent: 'center', alignItems: 'center' },
-  collabAvatarText: { color: '#fff', fontSize: 11, fontWeight: '700' },
-  collabName: { color: TEXT, fontSize: 13, fontWeight: '600' },
-  collabEmail: { color: MUTED, fontSize: 11 },
-  collabChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  collabChip: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#6366F122', borderRadius: 20, borderWidth: 1, borderColor: '#6366F144', paddingVertical: 5, paddingHorizontal: 10 },
-  collabChipText: { color: '#818CF8', fontSize: 12, fontWeight: '600' },
-  fab: { position: 'absolute', bottom: 24, right: 20, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#6366F1', borderRadius: 24, paddingVertical: 12, paddingHorizontal: 20, elevation: 4 },
-  fabText: { color: '#fff', fontWeight: '700', fontSize: 14 },
-  overlay: { flex: 1, backgroundColor: '#00000088', justifyContent: 'flex-end' },
-  sheet: { backgroundColor: SURFACE, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 12 },
-  sheetTitle: { color: TEXT, fontSize: 18, fontWeight: '800', marginBottom: 4 },
-  fieldLabel: { color: MUTED, fontSize: 13, fontWeight: '500' },
-  fieldInput: { backgroundColor: BG, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 14, paddingVertical: 12, color: TEXT, fontSize: 14 },
-  priorityRow: { flexDirection: 'row', gap: 10 },
-  priorityBtn: { flex: 1, borderRadius: 10, borderWidth: 1.5, borderColor: BORDER, paddingVertical: 8, alignItems: 'center' },
-  priorityBtnText: { color: MUTED, fontSize: 13, fontWeight: '600' },
-  sheetActions: { flexDirection: 'row', gap: 12, marginTop: 8 },
-  cancelBtn: { flex: 1, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingVertical: 13, alignItems: 'center' },
-  cancelBtnText: { color: MUTED, fontSize: 14, fontWeight: '600' },
-  saveBtn: { flex: 1, borderRadius: 12, backgroundColor: '#6366F1', paddingVertical: 13, alignItems: 'center' },
-  saveBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
-});

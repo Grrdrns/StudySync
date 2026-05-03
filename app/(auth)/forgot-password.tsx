@@ -1,20 +1,49 @@
+import { resetPassword } from '@/firebase/auth';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  async function handleSendReset() {
+    if (!email.trim()) {
+      Alert.alert('Error', 'Please enter your email address');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await resetPassword(email.trim());
+      setSent(true);
+      Alert.alert(
+        'Email Sent',
+        'Check your inbox for the password reset link. If you don\'t see it, check your spam folder.'
+      );
+    } catch (error: any) {
+      console.error('Password reset error:', error);
+      Alert.alert(
+        'Failed to Send',
+        error.message || 'Could not send reset email. Please check your email address and try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <KeyboardAvoidingView
@@ -58,8 +87,13 @@ export default function ForgotPasswordScreen() {
           </View>
         </View>
 
-        <TouchableOpacity style={styles.primaryBtn}>
-          <Text style={styles.primaryBtnText}>Send Reset Link</Text>
+        <TouchableOpacity
+          style={[styles.primaryBtn, loading && { opacity: 0.6 }]}
+          onPress={handleSendReset}
+          disabled={loading}>
+          <Text style={styles.primaryBtnText}>
+            {loading ? 'Sending...' : sent ? 'Resend Email' : 'Send Reset Link'}
+          </Text>
         </TouchableOpacity>
 
         <View style={styles.backToLogin}>

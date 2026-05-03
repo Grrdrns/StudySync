@@ -1,16 +1,18 @@
 import { HapticTab } from '@/components/haptic-tab';
 import { useFirebase } from '@/contexts/FirebaseContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
 
 export default function TabLayout() {
   const { userProfile } = useFirebase();
+  const { isDark } = useTheme();
   const isTeacher = userProfile?.role === 'teacher' || userProfile?.role === 'admin';
 
   const tabBarStyle = {
-    backgroundColor: '#1E293B',
-    borderTopColor: '#334155',
+    backgroundColor: isDark ? '#1E293B' : '#FFFFFF',
+    borderTopColor: isDark ? '#334155' : '#E2E8F0',
     borderTopWidth: 1,
     height: 64,
     paddingBottom: 8,

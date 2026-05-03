@@ -1,6 +1,7 @@
 import SimpleDatePicker from '@/components/SimpleDatePicker';
 import SimpleTimePicker from '@/components/SimpleTimePicker';
 import { useFirebase } from '@/contexts/FirebaseContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { db } from '@/firebase/config';
 import { Announcement, AssignedTask, AssignedTaskSubmission, GroupSharedTask, StudyGroup, Task, addTask, submitAssignedTask, subscribeToAnnouncements, subscribeToStudentAssignedTasks, subscribeToStudentSubmissions, subscribeToStudyGroups, subscribeToTasks, toggleTaskDone, uploadAssignmentFile } from '@/firebase/firestore';
 import { cancelTaskReminders, scheduleTaskReminders } from '@/utils/notifications';
@@ -8,7 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { useRouter } from 'expo-router';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     ActivityIndicator,
     Alert,
@@ -45,6 +46,124 @@ function getGreeting() {
 function StudentDashboard() {
   const router = useRouter();
   const { user, userProfile } = useFirebase();
+  const { isDark } = useTheme();
+  const BG = isDark ? '#0F172A' : '#F1F5F9';
+  const SURFACE = isDark ? '#1E293B' : '#FFFFFF';
+  const BORDER = isDark ? '#334155' : '#E2E8F0';
+  const TEXT = isDark ? '#F1F5F9' : '#0F172A';
+  const MUTED = isDark ? '#94A3B8' : '#64748B';
+  const th = useMemo(() => StyleSheet.create({
+    safe: { flex: 1, backgroundColor: BG },
+    screen: { flex: 1, backgroundColor: BG },
+    content: { padding: 18, gap: 14, paddingBottom: 40 },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 4, marginBottom: 4 },
+    greeting: { color: MUTED, fontSize: 13, marginBottom: 3 },
+    title: { color: TEXT, fontSize: 22, fontWeight: '800' },
+    avatarBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#6366F1', justifyContent: 'center', alignItems: 'center' },
+    avatarText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+    statsRow: { flexDirection: 'row', gap: 10 },
+    statCard: { flex: 1, backgroundColor: SURFACE, borderRadius: 14, borderWidth: 1, borderColor: BORDER, borderLeftWidth: 3, padding: 14, gap: 4 },
+    statValue: { color: '#818CF8', fontSize: 26, fontWeight: '800' },
+    statLabel: { color: MUTED, fontSize: 11 },
+    progressBanner: { backgroundColor: '#6366F1', borderRadius: 16, padding: 16, gap: 8 },
+    progressTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    progressLabel: { color: '#E0E7FF', fontSize: 14, fontWeight: '600' },
+    progressPct: { color: '#FFFFFF', fontSize: 18, fontWeight: '800' },
+    progressBarBg: { height: 8, backgroundColor: '#4F46E5', borderRadius: 4, overflow: 'hidden' },
+    progressBarFill: { height: '100%', backgroundColor: '#FFFFFF', borderRadius: 4 },
+    progressSub: { color: '#C7D2FE', fontSize: 12 },
+    panel: { backgroundColor: SURFACE, borderRadius: 16, borderWidth: 1, borderColor: BORDER, padding: 16, gap: 12 },
+    panelHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    panelTitle: { color: TEXT, fontSize: 15, fontWeight: '700' },
+    addBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#6366F1', borderRadius: 10, paddingVertical: 6, paddingHorizontal: 12 },
+    addBtnText: { color: '#fff', fontSize: 13, fontWeight: '600' },
+    taskRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 4 },
+    taskRowDone: { opacity: 0.5 },
+    checkbox: { width: 20, height: 20, borderRadius: 6, borderWidth: 1.5, borderColor: isDark ? '#475569' : '#CBD5E1', justifyContent: 'center', alignItems: 'center' },
+    checkboxDone: { backgroundColor: '#6366F1', borderColor: '#6366F1' },
+    taskBody: { flex: 1, gap: 2 },
+    taskTitle: { color: TEXT, fontSize: 14, fontWeight: '600' },
+    taskTitleDone: { textDecorationLine: 'line-through', color: MUTED },
+    taskMeta: { color: MUTED, fontSize: 12 },
+    badge: { borderRadius: 999, paddingVertical: 3, paddingHorizontal: 10 },
+    badgeText: { fontSize: 11, fontWeight: '600' },
+    reminderCard: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, backgroundColor: isDark ? '#F59E0B18' : '#FEF3C7', borderRadius: 14, borderWidth: 1, borderColor: isDark ? '#F59E0B44' : '#FCD34D', padding: 14 },
+    reminderIconWrap: { width: 36, height: 36, borderRadius: 10, backgroundColor: isDark ? '#F59E0B22' : '#FDE68A', justifyContent: 'center', alignItems: 'center' },
+    reminderTitle: { color: TEXT, fontSize: 13, fontWeight: '700', marginBottom: 3 },
+    reminderText: { color: MUTED, fontSize: 12, lineHeight: 18 },
+    ctaBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: '#8B5CF6', borderRadius: 12, paddingVertical: 12, marginTop: 4 },
+    ctaBtnText: { color: '#FFFFFF', fontWeight: '700', fontSize: 14 },
+    emptyText: { color: MUTED, fontSize: 13, textAlign: 'center', paddingVertical: 8 },
+    groupCountBadge: { backgroundColor: '#6366F122', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 },
+    groupCountText: { color: '#818CF8', fontSize: 12, fontWeight: '700' },
+    groupRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9, borderBottomWidth: 1, borderBottomColor: BORDER },
+    groupDot: { width: 10, height: 10, borderRadius: 5 },
+    groupName: { color: TEXT, fontSize: 13, fontWeight: '700' },
+    groupMeta: { color: MUTED, fontSize: 11, marginTop: 1 },
+    annRow: { borderLeftWidth: 3, borderLeftColor: BORDER, paddingLeft: 12, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: BORDER, gap: 4 },
+    annCatBadge: { borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 },
+    annCatText: { fontSize: 10, fontWeight: '700' },
+    annTitle: { color: TEXT, fontSize: 13, fontWeight: '700' },
+    annContent: { color: MUTED, fontSize: 12, lineHeight: 17 },
+    annMeta: { color: isDark ? '#475569' : '#94A3B8', fontSize: 11, marginTop: 2 },
+    assignRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: isDark ? '#1E293B' : '#E2E8F0' },
+    assignLockedBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#EF444422', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
+    assignLockedText: { color: '#EF4444', fontSize: 10, fontWeight: '700' },
+    assignSubmittedBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#10B98122', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
+    assignSubmittedText: { color: '#10B981', fontSize: 10, fontWeight: '700' },
+    assignSubmitBtn: { backgroundColor: '#6366F1', borderRadius: 10, paddingVertical: 7, paddingHorizontal: 14 },
+    assignSubmitBtnText: { color: '#fff', fontSize: 12, fontWeight: '700' },
+    // Modal styles
+    modalOverlay: { flex: 1, backgroundColor: '#00000088', justifyContent: 'flex-end' },
+    modalBox: { backgroundColor: SURFACE, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 12 },
+    modalTitle: { color: TEXT, fontSize: 18, fontWeight: '800', marginBottom: 4 },
+    fieldLabel: { color: MUTED, fontSize: 13, fontWeight: '500' },
+    fieldInput: { backgroundColor: BG, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 14, paddingVertical: 12, color: TEXT, fontSize: 14 },
+    priorityRow: { flexDirection: 'row', gap: 10 },
+    priorityBtn: { flex: 1, borderRadius: 10, borderWidth: 1.5, borderColor: BORDER, paddingVertical: 8, alignItems: 'center' },
+    priorityBtnText: { color: MUTED, fontSize: 13, fontWeight: '600' },
+    modalActions: { flexDirection: 'row', gap: 12, marginTop: 8 },
+    cancelBtn: { flex: 1, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingVertical: 13, alignItems: 'center' },
+    cancelBtnText: { color: MUTED, fontSize: 14, fontWeight: '600' },
+    saveBtn: { flex: 1, borderRadius: 12, backgroundColor: '#6366F1', paddingVertical: 13, alignItems: 'center' },
+    saveBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+    // Collaborator styles
+    collabSearchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: BG, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 12, paddingVertical: 10 },
+    collabSearchInput: { flex: 1, color: TEXT, fontSize: 13 },
+    collabDropdown: { backgroundColor: SURFACE, borderRadius: 12, borderWidth: 1, borderColor: BORDER, overflow: 'hidden' },
+    collabResultRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderBottomWidth: 1, borderBottomColor: BORDER },
+    collabAvatar: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#6366F1', justifyContent: 'center', alignItems: 'center' },
+    collabAvatarText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+    collabName: { color: TEXT, fontSize: 13, fontWeight: '600' },
+    collabEmail: { color: MUTED, fontSize: 11 },
+    collabChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+    collabChip: { flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: '#6366F122', borderRadius: 20, borderWidth: 1, borderColor: '#6366F144', paddingVertical: 5, paddingHorizontal: 10 },
+    collabChipText: { color: '#818CF8', fontSize: 12, fontWeight: '600' },
+    // Announcement modal styles
+    annModalOverlay: { flex: 1, backgroundColor: '#00000099', justifyContent: 'flex-end' },
+    annModalSheet: { backgroundColor: SURFACE, borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingBottom: 36, overflow: 'hidden', maxHeight: '85%' },
+    annModalHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: BORDER, alignSelf: 'center', marginTop: 12, marginBottom: 4 },
+    annModalStrip: { height: 3, width: '100%' },
+    annModalHeader: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: BORDER },
+    annModalTitle: { color: TEXT, fontSize: 19, fontWeight: '800', lineHeight: 26 },
+    annModalMeta: { color: MUTED, fontSize: 12, marginTop: 4 },
+    annModalPinnedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#6366F115', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 },
+    annModalPinnedText: { color: '#818CF8', fontSize: 11, fontWeight: '700' },
+    annModalBody: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 8, flexGrow: 0 },
+    annModalContent: { color: TEXT, fontSize: 14, lineHeight: 22 },
+    annModalCloseBtn: { marginHorizontal: 20, marginTop: 16, backgroundColor: isDark ? '#334155' : '#E2E8F0', borderRadius: 14, paddingVertical: 14, alignItems: 'center' },
+    annModalCloseBtnText: { color: TEXT, fontSize: 14, fontWeight: '700' },
+    // Submission modal styles
+    subAttachViewBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: isDark ? '#818CF811' : '#EEF2FF', borderRadius: 10, paddingHorizontal: 16, paddingVertical: 10, marginHorizontal: 20, marginTop: 4, borderWidth: 1, borderColor: isDark ? '#818CF833' : '#C7D2FE' },
+    subAttachViewText: { flex: 1, color: '#818CF8', fontSize: 13, fontWeight: '600' },
+    dropboxLabel: { color: MUTED, fontSize: 12, fontWeight: '600' },
+    dropbox: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 12, borderWidth: 1.5, borderColor: BORDER, borderStyle: 'dashed', backgroundColor: BG, paddingHorizontal: 16, paddingVertical: 18 },
+    dropboxFilled: { borderColor: '#6366F1', borderStyle: 'solid', backgroundColor: '#6366F111' },
+    dropboxText: { flex: 1, color: MUTED, fontSize: 13 },
+    uploadProgressWrap: { height: 6, backgroundColor: isDark ? '#1E3A5F' : '#E2E8F0', borderRadius: 6, overflow: 'hidden' },
+    uploadProgressFill: { height: 6, backgroundColor: '#6366F1', borderRadius: 6 },
+    uploadProgressText: { color: MUTED, fontSize: 11, marginTop: 4 },
+  }), [isDark]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -102,8 +221,8 @@ function StudentDashboard() {
     const unsub = subscribeToAnnouncements(anns => {
       // pinned first
       setAnnouncements([
-        ...anns.filter(a => a.pinned),
-        ...anns.filter(a => !a.pinned),
+        ...announcements.filter(a => a.pinned),
+        ...announcements.filter(a => !a.pinned),
       ]);
     });
     return () => unsub();
@@ -171,85 +290,85 @@ function StudentDashboard() {
   }
 
   return (
-    <SafeAreaView style={s.safe} edges={['top']}>
-      <ScrollView style={s.screen} contentContainerStyle={s.content} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={th.safe} edges={['top']}>
+      <ScrollView style={th.screen} contentContainerStyle={th.content} showsVerticalScrollIndicator={false}>
 
-        <View style={s.header}>
+        <View style={th.header}>
           <View>
-            <Text style={s.greeting}>{getGreeting()} 👋</Text>
-            <Text style={s.title}>Student Dashboard</Text>
+            <Text style={th.greeting}>{getGreeting()} 👋</Text>
+            <Text style={th.title}>Student Dashboard</Text>
           </View>
-          <Pressable style={s.avatarBtn} onPress={() => router.push('/(tabs)/profile' as any)}>
-            <Text style={s.avatarText}>
+          <Pressable style={th.avatarBtn} onPress={() => router.push('/(tabs)/profile' as any)}>
+            <Text style={th.avatarText}>
               {user?.displayName?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
             </Text>
           </Pressable>
         </View>
 
-        <View style={s.statsRow}>
-          <View style={[s.statCard, { borderLeftColor: '#6366F1' }]}>
-            <Text style={s.statValue}>{pendingCount}</Text>
-            <Text style={s.statLabel}>Pending</Text>
+        <View style={th.statsRow}>
+          <View style={[th.statCard, { borderLeftColor: '#6366F1' }]}>
+            <Text style={th.statValue}>{pendingCount}</Text>
+            <Text style={th.statLabel}>Pending</Text>
           </View>
-          <View style={[s.statCard, { borderLeftColor: '#10B981' }]}>
-            <Text style={[s.statValue, { color: '#10B981' }]}>{completedCount}</Text>
-            <Text style={s.statLabel}>Completed</Text>
+          <View style={[th.statCard, { borderLeftColor: '#10B981' }]}>
+            <Text style={[th.statValue, { color: '#10B981' }]}>{completedCount}</Text>
+            <Text style={th.statLabel}>Completed</Text>
           </View>
-          <View style={[s.statCard, { borderLeftColor: '#F59E0B' }]}>
-            <Text style={[s.statValue, { color: '#F59E0B' }]}>{tasks.length}</Text>
-            <Text style={s.statLabel}>Total</Text>
+          <View style={[th.statCard, { borderLeftColor: '#F59E0B' }]}>
+            <Text style={[th.statValue, { color: '#F59E0B' }]}>{tasks.length}</Text>
+            <Text style={th.statLabel}>Total</Text>
           </View>
         </View>
 
-        <View style={s.progressBanner}>
-          <View style={s.progressTop}>
-            <Text style={s.progressLabel}>Overall Progress</Text>
-            <Text style={s.progressPct}>
+        <View style={th.progressBanner}>
+          <View style={th.progressTop}>
+            <Text style={th.progressLabel}>Overall Progress</Text>
+            <Text style={th.progressPct}>
               {tasks.length === 0 ? '0%' : Math.round((completedCount / tasks.length) * 100) + '%'}
             </Text>
           </View>
-          <View style={s.progressBarBg}>
-            <View style={[s.progressBarFill, { width: (tasks.length === 0 ? '0%' : `${Math.round((completedCount / tasks.length) * 100)}%`) as any }]} />
+          <View style={th.progressBarBg}>
+            <View style={[th.progressBarFill, { width: (tasks.length === 0 ? '0%' : `${Math.round((completedCount / tasks.length) * 100)}%`) as any }]} />
           </View>
-          <Text style={s.progressSub}>{completedCount} of {tasks.length} tasks completed</Text>
+          <Text style={th.progressSub}>{completedCount} of {tasks.length} tasks completed</Text>
         </View>
 
-        <View style={s.panel}>
-          <View style={s.panelHeader}>
-            <Text style={s.panelTitle}>My Tasks</Text>
-            <TouchableOpacity style={s.addBtn} onPress={() => setModalVisible(true)}>
+        <View style={th.panel}>
+          <View style={th.panelHeader}>
+            <Text style={th.panelTitle}>My Tasks</Text>
+            <TouchableOpacity style={th.addBtn} onPress={() => setModalVisible(true)}>
               <Ionicons name="add" size={16} color="#fff" />
-              <Text style={s.addBtnText}>Add Task</Text>
+              <Text style={th.addBtnText}>Add Task</Text>
             </TouchableOpacity>
           </View>
           {loading ? (
             <ActivityIndicator color="#6366F1" style={{ marginVertical: 16 }} />
           ) : tasks.length === 0 ? (
-            <Text style={s.emptyText}>No tasks yet. Tap "Add Task" to get started!</Text>
+            <Text style={th.emptyText}>No tasks yet. Tap "Add Task" to get started!</Text>
           ) : tasks.map((item) => (
-            <TouchableOpacity key={item.id} style={[s.taskRow, item.done && s.taskRowDone]} onPress={() => item.id && toggleDone(item.id)} activeOpacity={0.7}>
-              <View style={[s.checkbox, item.done && s.checkboxDone]}>
+            <TouchableOpacity key={item.id} style={[th.taskRow, item.done && th.taskRowDone]} onPress={() => item.id && toggleDone(item.id)} activeOpacity={0.7}>
+              <View style={[th.checkbox, item.done && th.checkboxDone]}>
                 {item.done && <Ionicons name="checkmark" size={12} color="#fff" />}
               </View>
-              <View style={s.taskBody}>
-                <Text style={[s.taskTitle, item.done && s.taskTitleDone]}>{item.title}</Text>
-                <Text style={s.taskMeta}>{item.subject} • {item.due}</Text>
+              <View style={th.taskBody}>
+                <Text style={[th.taskTitle, item.done && th.taskTitleDone]}>{item.title}</Text>
+                <Text style={th.taskMeta}>{item.subject} • {item.due}</Text>
               </View>
-              <View style={[s.badge, { backgroundColor: PRIORITY_COLOR[item.priority] + '22' }]}>
-                <Text style={[s.badgeText, { color: PRIORITY_COLOR[item.priority] }]}>{item.priority}</Text>
+              <View style={[th.badge, { backgroundColor: PRIORITY_COLOR[item.priority] + '22' }]}>
+                <Text style={[th.badgeText, { color: PRIORITY_COLOR[item.priority] }]}>{item.priority}</Text>
               </View>
             </TouchableOpacity>
           ))}
         </View>
 
         {pendingCount > 0 && (
-          <View style={s.reminderCard}>
-            <View style={s.reminderIconWrap}>
+          <View style={th.reminderCard}>
+            <View style={th.reminderIconWrap}>
               <Ionicons name="alarm-outline" size={20} color="#F59E0B" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={s.reminderTitle}>Smart Reminder</Text>
-              <Text style={s.reminderText}>
+              <Text style={th.reminderTitle}>Smart Reminder</Text>
+              <Text style={th.reminderText}>
                 You have <Text style={{ color: '#EC4899', fontWeight: '700' }}>{pendingCount} pending task{pendingCount > 1 ? 's' : ''}</Text>. Don&apos;t forget to complete them!
               </Text>
             </View>
@@ -258,11 +377,11 @@ function StudentDashboard() {
 
         {/* ── ASSIGNED TASKS PANEL ── */}
         {assignedTasks.length > 0 && (
-          <View style={s.panel}>
-            <View style={s.panelHeader}>
-              <Text style={s.panelTitle}>Assignments</Text>
-              <View style={[s.groupCountBadge, { backgroundColor: '#EC489922' }]}>
-                <Text style={[s.groupCountText, { color: '#EC4899' }]}>{assignedTasks.length}</Text>
+          <View style={th.panel}>
+            <View style={th.panelHeader}>
+              <Text style={th.panelTitle}>Assignments</Text>
+              <View style={[th.groupCountBadge, { backgroundColor: '#EC489922' }]}>
+                <Text style={[th.groupCountText, { color: '#EC4899' }]}>{assignedTasks.length}</Text>
               </View>
             </View>
             {assignedTasks.map(at => {
@@ -271,32 +390,32 @@ function StudentDashboard() {
               const PC2: Record<string, string> = { High: '#EC4899', Medium: '#F59E0B', Low: '#10B981' };
               const color = PC2[at.priority] || '#6366F1';
               return (
-                <View key={at.id} style={[s.assignRow, isLocked && { opacity: 0.6 }]}>
+                <View key={at.id} style={[th.assignRow, isLocked && { opacity: 0.6 }]}>
                   <View style={{ flex: 1 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 }}>
-                      <View style={[s.annCatBadge, { backgroundColor: color + '22' }]}>
-                        <Text style={[s.annCatText, { color }]}>{at.priority}</Text>
+                      <View style={[th.annCatBadge, { backgroundColor: color + '22' }]}>
+                        <Text style={[th.annCatText, { color }]}>{at.priority}</Text>
                       </View>
                       {isLocked && (
-                        <View style={s.assignLockedBadge}>
+                        <View style={th.assignLockedBadge}>
                           <Ionicons name="lock-closed" size={9} color="#EF4444" />
-                          <Text style={s.assignLockedText}>Closed</Text>
+                          <Text style={th.assignLockedText}>Closed</Text>
                         </View>
                       )}
                       {submitted && !isLocked && (
-                        <View style={s.assignSubmittedBadge}>
+                        <View style={th.assignSubmittedBadge}>
                           <Ionicons name="checkmark-circle" size={9} color="#10B981" />
-                          <Text style={s.assignSubmittedText}>Submitted</Text>
+                          <Text style={th.assignSubmittedText}>Submitted</Text>
                         </View>
                       )}
                     </View>
-                    <Text style={s.annTitle}>{at.title}</Text>
-                    <Text style={s.annMeta}>{at.subject} · Due {at.dueDate} {at.dueTime}</Text>
-                    <Text style={[s.annMeta, { color: '#475569' }]}>by {at.teacherName}</Text>
+                    <Text style={th.annTitle}>{at.title}</Text>
+                    <Text style={th.annMeta}>{at.subject} · Due {at.dueDate} {at.dueTime}</Text>
+                    <Text style={[th.annMeta, { color: '#475569' }]}>by {at.teacherName}</Text>
                   </View>
                   {!isLocked && !submitted && (
-                    <TouchableOpacity style={s.assignSubmitBtn} onPress={() => setSelectedAssignment(at)}>
-                      <Text style={s.assignSubmitBtnText}>Submit</Text>
+                    <TouchableOpacity style={th.assignSubmitBtn} onPress={() => setSelectedAssignment(at)}>
+                      <Text style={th.assignSubmitBtnText}>Submit</Text>
                     </TouchableOpacity>
                   )}
                   {submitted && !isLocked && (
@@ -312,29 +431,29 @@ function StudentDashboard() {
         )}
 
         {announcements.length > 0 && (
-          <View style={s.panel}>
-            <View style={s.panelHeader}>
-              <Text style={s.panelTitle}>Announcements</Text>
-              <View style={[s.groupCountBadge, { backgroundColor: '#8B5CF622' }]}>
-                <Text style={[s.groupCountText, { color: '#A78BFA' }]}>{announcements.length}</Text>
+          <View style={th.panel}>
+            <View style={th.panelHeader}>
+              <Text style={th.panelTitle}>Announcements</Text>
+              <View style={[th.groupCountBadge, { backgroundColor: '#8B5CF622' }]}>
+                <Text style={[th.groupCountText, { color: '#A78BFA' }]}>{announcements.length}</Text>
               </View>
             </View>
             {announcements.slice(0, 3).map(ann => {
               const CC: Record<string, string> = { General: '#6366F1', Exam: '#EC4899', Homework: '#F59E0B', Reminder: '#10B981', Event: '#8B5CF6' };
               const color = CC[ann.category] || '#6366F1';
               return (
-                <TouchableOpacity key={ann.id} style={[s.annRow, ann.pinned && { borderLeftColor: '#818CF8' }]}
+                <TouchableOpacity key={ann.id} style={[th.annRow, ann.pinned && { borderLeftColor: '#818CF8' }]}
                   activeOpacity={0.7} onPress={() => setSelectedAnn(ann)}>
                   <View style={{ flex: 1 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
                       {ann.pinned && <Ionicons name="pin" size={10} color="#818CF8" />}
-                      <View style={[s.annCatBadge, { backgroundColor: color + '22' }]}>
-                        <Text style={[s.annCatText, { color }]}>{ann.category}</Text>
+                      <View style={[th.annCatBadge, { backgroundColor: color + '22' }]}>
+                        <Text style={[th.annCatText, { color }]}>{ann.category}</Text>
                       </View>
                     </View>
-                    <Text style={s.annTitle}>{ann.title}</Text>
-                    <Text style={s.annContent} numberOfLines={2}>{ann.content}</Text>
-                    <Text style={s.annMeta}>by {ann.teacherName}</Text>
+                    <Text style={th.annTitle}>{ann.title}</Text>
+                    <Text style={th.annContent} numberOfLines={2}>{ann.content}</Text>
+                    <Text style={th.annMeta}>by {ann.teacherName}</Text>
                   </View>
                   <Ionicons name="chevron-forward" size={14} color="#475569" />
                 </TouchableOpacity>
@@ -343,28 +462,28 @@ function StudentDashboard() {
           </View>
         )}
 
-        <View style={s.panel}>
-          <View style={s.panelHeader}>
-            <Text style={s.panelTitle}>Group Collaboration</Text>
-            <View style={s.groupCountBadge}>
-              <Text style={s.groupCountText}>{groups.length}</Text>
+        <View style={th.panel}>
+          <View style={th.panelHeader}>
+            <Text style={th.panelTitle}>Group Collaboration</Text>
+            <View style={th.groupCountBadge}>
+              <Text style={th.groupCountText}>{groups.length}</Text>
             </View>
           </View>
           {groups.length === 0 ? (
-            <Text style={s.emptyText}>No group yet. Create or join a group to collaborate!</Text>
+            <Text style={th.emptyText}>No group yet. Create or join a group to collaborate!</Text>
           ) : groups.map((g, idx) => (
-            <TouchableOpacity key={g.id} style={s.groupRow} onPress={() => router.push('/(tabs)/collaborate' as any)} activeOpacity={0.75}>
-              <View style={[s.groupDot, { backgroundColor: ['#6366F1','#EC4899','#10B981','#F59E0B','#8B5CF6'][idx % 5] }]} />
+            <TouchableOpacity key={g.id} style={th.groupRow} onPress={() => router.push('/(tabs)/collaborate' as any)} activeOpacity={0.75}>
+              <View style={[th.groupDot, { backgroundColor: ['#6366F1','#EC4899','#10B981','#F59E0B','#8B5CF6'][idx % 5] }]} />
               <View style={{ flex: 1 }}>
-                <Text style={s.groupName}>{g.name}</Text>
-                <Text style={s.groupMeta}>{g.members.length} member{g.members.length !== 1 ? 's' : ''}{g.ownerUid === user?.uid ? ' · Owner' : ''}</Text>
+                <Text style={th.groupName}>{g.name}</Text>
+                <Text style={th.groupMeta}>{g.members.length} member{g.members.length !== 1 ? 's' : ''}{g.ownerUid === user?.uid ? ' · Owner' : ''}</Text>
               </View>
               <Ionicons name="chevron-forward" size={14} color="#475569" />
             </TouchableOpacity>
           ))}
-          <TouchableOpacity style={s.ctaBtn} onPress={() => router.push('/(tabs)/collaborate' as any)}>
+          <TouchableOpacity style={th.ctaBtn} onPress={() => router.push('/(tabs)/collaborate' as any)}>
             <Ionicons name="people" size={15} color="#fff" />
-            <Text style={s.ctaBtnText}>{groups.length > 0 ? 'Open Team Workspace' : 'Create a Group'}</Text>
+            <Text style={th.ctaBtnText}>{groups.length > 0 ? 'Open Team Workspace' : 'Create a Group'}</Text>
           </TouchableOpacity>
         </View>
 
@@ -377,35 +496,35 @@ function StudentDashboard() {
         const color = CC[ann.category] || '#6366F1';
         return (
           <Modal visible transparent animationType="slide" onRequestClose={() => setSelectedAnn(null)}>
-            <View style={s.annModalOverlay}>
-              <View style={s.annModalSheet}>
-                <View style={s.annModalHandle} />
+            <View style={th.annModalOverlay}>
+              <View style={th.annModalSheet}>
+                <View style={th.annModalHandle} />
                 {/* Color accent strip */}
-                <View style={[s.annModalStrip, { backgroundColor: color }]} />
+                <View style={[th.annModalStrip, { backgroundColor: color }]} />
                 {/* Header */}
-                <View style={s.annModalHeader}>
+                <View style={th.annModalHeader}>
                   <View style={{ flex: 1, gap: 6 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                       {ann.pinned && (
-                        <View style={s.annModalPinnedBadge}>
+                        <View style={th.annModalPinnedBadge}>
                           <Ionicons name="pin" size={11} color="#818CF8" />
-                          <Text style={s.annModalPinnedText}>Pinned</Text>
+                          <Text style={th.annModalPinnedText}>Pinned</Text>
                         </View>
                       )}
-                      <View style={[s.annCatBadge, { backgroundColor: color + '22' }]}>
-                        <Text style={[s.annCatText, { color, fontSize: 12 }]}>{ann.category}</Text>
+                      <View style={[th.annCatBadge, { backgroundColor: color + '22' }]}>
+                        <Text style={[th.annCatText, { color, fontSize: 12 }]}>{ann.category}</Text>
                       </View>
                     </View>
-                    <Text style={s.annModalTitle}>{ann.title}</Text>
-                    <Text style={s.annModalMeta}>Posted by {ann.teacherName}</Text>
+                    <Text style={th.annModalTitle}>{ann.title}</Text>
+                    <Text style={th.annModalMeta}>Posted by {ann.teacherName}</Text>
                   </View>
                 </View>
                 {/* Content */}
-                <ScrollView style={s.annModalBody} showsVerticalScrollIndicator={false}>
-                  <Text style={s.annModalContent}>{ann.content}</Text>
+                <ScrollView style={th.annModalBody} showsVerticalScrollIndicator={false}>
+                  <Text style={th.annModalContent}>{ann.content}</Text>
                 </ScrollView>
-                <TouchableOpacity style={s.annModalCloseBtn} onPress={() => setSelectedAnn(null)}>
-                  <Text style={s.annModalCloseBtnText}>Close</Text>
+                <TouchableOpacity style={th.annModalCloseBtn} onPress={() => setSelectedAnn(null)}>
+                  <Text style={th.annModalCloseBtnText}>Close</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -420,40 +539,40 @@ function StudentDashboard() {
         const color = PC2[at.priority] || '#6366F1';
         return (
           <Modal visible transparent animationType="slide" onRequestClose={() => { setSelectedAssignment(null); setSubmitFile(null); setSubmitUploadPct(0); }}>
-            <View style={s.annModalOverlay}>
-              <View style={s.annModalSheet}>
-                <View style={s.annModalHandle} />
-                <View style={[s.annModalStrip, { backgroundColor: color }]} />
-                <View style={s.annModalHeader}>
+            <View style={th.annModalOverlay}>
+              <View style={th.annModalSheet}>
+                <View style={th.annModalHandle} />
+                <View style={[th.annModalStrip, { backgroundColor: color }]} />
+                <View style={th.annModalHeader}>
                   <View style={{ flex: 1, gap: 4 }}>
-                    <View style={[s.annCatBadge, { backgroundColor: color + '22', alignSelf: 'flex-start' }]}>
-                      <Text style={[s.annCatText, { color, fontSize: 12 }]}>{at.priority} Priority</Text>
+                    <View style={[th.annCatBadge, { backgroundColor: color + '22', alignSelf: 'flex-start' }]}>
+                      <Text style={[th.annCatText, { color, fontSize: 12 }]}>{at.priority} Priority</Text>
                     </View>
-                    <Text style={s.annModalTitle}>{at.title}</Text>
-                    <Text style={s.annModalMeta}>{at.subject} · Due {at.dueDate} at {at.dueTime}</Text>
-                    <Text style={[s.annModalMeta, { color: '#475569' }]}>Assigned by {at.teacherName}</Text>
+                    <Text style={th.annModalTitle}>{at.title}</Text>
+                    <Text style={th.annModalMeta}>{at.subject} · Due {at.dueDate} at {at.dueTime}</Text>
+                    <Text style={[th.annModalMeta, { color: '#475569' }]}>Assigned by {at.teacherName}</Text>
                   </View>
                 </View>
                 {/* Teacher attachment link */}
                 {at.attachmentUrl && (
                   <TouchableOpacity
-                    style={s.subAttachViewBtn}
+                    style={th.subAttachViewBtn}
                     onPress={() => Linking.openURL(at.attachmentUrl!)}>
                     <Ionicons name="document-attach-outline" size={14} color="#818CF8" />
-                    <Text style={s.subAttachViewText} numberOfLines={1}>{at.attachmentName || 'View Assignment File'}</Text>
+                    <Text style={th.subAttachViewText} numberOfLines={1}>{at.attachmentName || 'View Assignment File'}</Text>
                     <Ionicons name="open-outline" size={13} color="#818CF8" />
                   </TouchableOpacity>
                 )}
                 {at.description ? (
-                  <ScrollView style={s.annModalBody} showsVerticalScrollIndicator={false}>
-                    <Text style={[s.annModalContent, { marginBottom: 8 }]}>{at.description}</Text>
+                  <ScrollView style={th.annModalBody} showsVerticalScrollIndicator={false}>
+                    <Text style={[th.annModalContent, { marginBottom: 8 }]}>{at.description}</Text>
                   </ScrollView>
                 ) : null}
                 {/* Student dropbox */}
                 <View style={{ paddingHorizontal: 20, paddingTop: 4, gap: 6 }}>
-                  <Text style={s.dropboxLabel}>Your Submission File</Text>
+                  <Text style={th.dropboxLabel}>Your Submission File</Text>
                   <TouchableOpacity
-                    style={[s.dropbox, submitFile && s.dropboxFilled]}
+                    style={[th.dropbox, submitFile && th.dropboxFilled]}
                     onPress={async () => {
                       try {
                         const result = await DocumentPicker.getDocumentAsync({
@@ -470,7 +589,7 @@ function StudentDashboard() {
                       } catch { Alert.alert('Error', 'Could not open file picker.'); }
                     }}>
                     <Ionicons name={submitFile ? 'document' : 'cloud-upload-outline'} size={22} color={submitFile ? '#6366F1' : '#475569'} />
-                    <Text style={[s.dropboxText, submitFile && { color: '#6366F1' }]} numberOfLines={1}>
+                    <Text style={[th.dropboxText, submitFile && { color: '#6366F1' }]} numberOfLines={1}>
                       {submitFile ? submitFile.name : 'Tap to upload PDF, DOC, or other file'}
                     </Text>
                     {submitFile && (
@@ -480,15 +599,15 @@ function StudentDashboard() {
                     )}
                   </TouchableOpacity>
                   {submitting && submitFile && submitUploadPct > 0 && submitUploadPct < 100 && (
-                    <View style={s.uploadProgressWrap}>
-                      <View style={[s.uploadProgressFill, { width: `${submitUploadPct}%` as any }]} />
-                      <Text style={s.uploadProgressText}>Uploading… {submitUploadPct}%</Text>
+                    <View style={th.uploadProgressWrap}>
+                      <View style={[th.uploadProgressFill, { width: `${submitUploadPct}%` as any }]} />
+                      <Text style={th.uploadProgressText}>Uploading… {submitUploadPct}%</Text>
                     </View>
                   )}
                 </View>
                 <View style={{ paddingHorizontal: 20, paddingTop: 8, paddingBottom: 20, gap: 10 }}>
                   <TouchableOpacity
-                    style={[s.annModalCloseBtn, { backgroundColor: '#6366F1' }, submitting && { opacity: 0.6 }]}
+                    style={[th.annModalCloseBtn, { backgroundColor: '#6366F1' }, submitting && { opacity: 0.6 }]}
                     disabled={submitting}
                     onPress={async () => {
                       if (!user || !userProfile) return;
@@ -523,10 +642,10 @@ function StudentDashboard() {
                         setSubmitting(false);
                       }
                     }}>
-                    <Text style={[s.annModalCloseBtnText, { color: '#fff' }]}>{submitting ? 'Submitting…' : 'Submit Assignment'}</Text>
+                    <Text style={[th.annModalCloseBtnText, { color: '#fff' }]}>{submitting ? 'Submitting…' : 'Submit Assignment'}</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={s.annModalCloseBtn} onPress={() => { setSelectedAssignment(null); setSubmitFile(null); setSubmitUploadPct(0); }}>
-                    <Text style={s.annModalCloseBtnText}>Cancel</Text>
+                  <TouchableOpacity style={th.annModalCloseBtn} onPress={() => { setSelectedAssignment(null); setSubmitFile(null); setSubmitUploadPct(0); }}>
+                    <Text style={th.annModalCloseBtnText}>Cancel</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -536,40 +655,40 @@ function StudentDashboard() {
       })()}
 
       <Modal visible={modalVisible} transparent animationType="slide" onRequestClose={() => setModalVisible(false)}>
-        <View style={s.modalOverlay}>
-          <View style={s.modalBox}>
-            <Text style={s.modalTitle}>New Task</Text>
+        <View style={th.modalOverlay}>
+          <View style={th.modalBox}>
+            <Text style={th.modalTitle}>New Task</Text>
 
-            <Text style={s.fieldLabel}>Task Title *</Text>
-            <TextInput style={s.fieldInput} placeholder="e.g. Physics Lab Report" placeholderTextColor="#4B5563" value={newTitle} onChangeText={setNewTitle} />
+            <Text style={th.fieldLabel}>Task Title *</Text>
+            <TextInput style={th.fieldInput} placeholder="e.g. Physics Lab Report" placeholderTextColor="#4B5563" value={newTitle} onChangeText={setNewTitle} />
 
-            <Text style={s.fieldLabel}>Subject *</Text>
-            <TextInput style={s.fieldInput} placeholder="e.g. Physics" placeholderTextColor="#4B5563" value={newSubject} onChangeText={setNewSubject} />
+            <Text style={th.fieldLabel}>Subject *</Text>
+            <TextInput style={th.fieldInput} placeholder="e.g. Physics" placeholderTextColor="#4B5563" value={newSubject} onChangeText={setNewSubject} />
 
-            <Text style={s.fieldLabel}>Due Date *</Text>
+            <Text style={th.fieldLabel}>Due Date *</Text>
             <SimpleDatePicker
               value={newDueDate}
               minimumDate={new Date()}
               onChange={(date) => setNewDueDate(date)}
             />
 
-            <Text style={s.fieldLabel}>Time</Text>
+            <Text style={th.fieldLabel}>Time</Text>
             <SimpleTimePicker value={newTime} onChange={setNewTime} />
 
-            <Text style={s.fieldLabel}>Priority</Text>
-            <View style={s.priorityRow}>
+            <Text style={th.fieldLabel}>Priority</Text>
+            <View style={th.priorityRow}>
               {(['High', 'Medium', 'Low'] as Priority[]).map((p) => (
-                <TouchableOpacity key={p} style={[s.priorityBtn, newPriority === p && { backgroundColor: PRIORITY_COLOR[p] + '33', borderColor: PRIORITY_COLOR[p] }]} onPress={() => setNewPriority(p)}>
-                  <Text style={[s.priorityBtnText, newPriority === p && { color: PRIORITY_COLOR[p] }]}>{p}</Text>
+                <TouchableOpacity key={p} style={[th.priorityBtn, newPriority === p && { backgroundColor: PRIORITY_COLOR[p] + '33', borderColor: PRIORITY_COLOR[p] }]} onPress={() => setNewPriority(p)}>
+                  <Text style={[th.priorityBtnText, newPriority === p && { color: PRIORITY_COLOR[p] }]}>{p}</Text>
                 </TouchableOpacity>
               ))}
             </View>
 
-            <Text style={s.fieldLabel}>Collaborators (optional)</Text>
-            <View style={s.collabSearchBox}>
+            <Text style={th.fieldLabel}>Collaborators (optional)</Text>
+            <View style={th.collabSearchBox}>
               <Ionicons name="search-outline" size={14} color="#94A3B8" />
               <TextInput
-                style={s.collabSearchInput}
+                style={th.collabSearchInput}
                 placeholder="Search by name or email..."
                 placeholderTextColor="#4B5563"
                 value={collabSearch}
@@ -578,15 +697,15 @@ function StudentDashboard() {
               {searchingCollab && <ActivityIndicator size="small" color="#6366F1" />}
             </View>
             {collabResults.length > 0 && (
-              <View style={s.collabDropdown}>
+              <View style={th.collabDropdown}>
                 {collabResults.map(c => (
-                  <TouchableOpacity key={c.uid} style={s.collabResultRow} onPress={() => addCollaborator(c)}>
-                    <View style={s.collabAvatar}>
-                      <Text style={s.collabAvatarText}>{c.displayName.slice(0,2).toUpperCase()}</Text>
+                  <TouchableOpacity key={c.uid} style={th.collabResultRow} onPress={() => addCollaborator(c)}>
+                    <View style={th.collabAvatar}>
+                      <Text style={th.collabAvatarText}>{c.displayName.slice(0,2).toUpperCase()}</Text>
                     </View>
                     <View style={{flex:1}}>
-                      <Text style={s.collabName}>{c.displayName}</Text>
-                      <Text style={s.collabEmail}>{c.email}</Text>
+                      <Text style={th.collabName}>{c.displayName}</Text>
+                      <Text style={th.collabEmail}>{c.email}</Text>
                     </View>
                     <Ionicons name="add-circle-outline" size={18} color="#818CF8" />
                   </TouchableOpacity>
@@ -594,10 +713,10 @@ function StudentDashboard() {
               </View>
             )}
             {collaborators.length > 0 && (
-              <View style={s.collabChips}>
+              <View style={th.collabChips}>
                 {collaborators.map(c => (
-                  <View key={c.uid} style={s.collabChip}>
-                    <Text style={s.collabChipText}>{c.displayName}</Text>
+                  <View key={c.uid} style={th.collabChip}>
+                    <Text style={th.collabChipText}>{c.displayName}</Text>
                     <TouchableOpacity onPress={() => removeCollaborator(c.uid)}>
                       <Ionicons name="close-circle" size={14} color="#818CF8" />
                     </TouchableOpacity>
@@ -606,12 +725,12 @@ function StudentDashboard() {
               </View>
             )}
 
-            <View style={s.modalActions}>
-              <TouchableOpacity style={s.cancelBtn} onPress={() => setModalVisible(false)}>
-                <Text style={s.cancelBtnText}>Cancel</Text>
+            <View style={th.modalActions}>
+              <TouchableOpacity style={th.cancelBtn} onPress={() => setModalVisible(false)}>
+                <Text style={th.cancelBtnText}>Cancel</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={s.saveBtn} onPress={handleAddTask}>
-                <Text style={s.saveBtnText}>Add Task</Text>
+              <TouchableOpacity style={th.saveBtn} onPress={handleAddTask}>
+                <Text style={th.saveBtnText}>Add Task</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -634,6 +753,16 @@ interface Student {
 function TeacherDashboard() {
   const router = useRouter();
   const { user, userProfile } = useFirebase();
+  const { isDark } = useTheme();
+  const BG = isDark ? '#0F172A' : '#F1F5F9';
+  const SURFACE = isDark ? '#1E293B' : '#FFFFFF';
+  const BORDER = isDark ? '#334155' : '#E2E8F0';
+  const TEXT = isDark ? '#F1F5F9' : '#0F172A';
+  const MUTED = isDark ? '#94A3B8' : '#64748B';
+  const th = useMemo(() => StyleSheet.create({
+    safe: { flex: 1, backgroundColor: BG },
+    screen: { flex: 1, backgroundColor: BG },
+  }), [isDark]);
 
   type TTab = 'tasks' | 'groups' | 'students';
   const [tab, setTab] = useState<TTab>('tasks');
@@ -900,7 +1029,7 @@ function TeacherDashboard() {
     const done = groupTasks.filter(t => t.done).length;
     const completion = groupTasks.length === 0 ? 0 : Math.round((done / groupTasks.length) * 100);
     return (
-      <SafeAreaView style={s.safe} edges={['top']}>
+      <SafeAreaView style={th.safe} edges={['top']}>
         {/* Group header */}
         <View style={td.groupHeader}>
           <TouchableOpacity onPress={() => { setActiveGroup(null); setGroupTasks([]); }} style={td.backBtn}>
@@ -933,7 +1062,7 @@ function TeacherDashboard() {
           ))}
         </View>
 
-        <ScrollView style={s.screen} contentContainerStyle={td.listContent} showsVerticalScrollIndicator={false}>
+        <ScrollView style={th.screen} contentContainerStyle={td.listContent} showsVerticalScrollIndicator={false}>
           {groupTab === 'tasks' && (
             groupTasks.length === 0
               ? <View style={td.emptyWrap}><Ionicons name="checkbox-outline" size={36} color="#334155" /><Text style={td.emptyText}>No tasks yet in this group.</Text></View>
@@ -999,7 +1128,7 @@ function TeacherDashboard() {
 
   // ── Main teacher dashboard ──
   return (
-    <SafeAreaView style={s.safe} edges={['top']}>
+    <SafeAreaView style={th.safe} edges={['top']}>
 
       {/* Header */}
       <View style={td.mainHeader}>
@@ -1055,7 +1184,7 @@ function TeacherDashboard() {
 
       {/* ── STUDENT TASKS ── */}
       {tab === 'tasks' && (
-        <ScrollView style={s.screen} contentContainerStyle={td.listContent} showsVerticalScrollIndicator={false}>
+        <ScrollView style={th.screen} contentContainerStyle={td.listContent} showsVerticalScrollIndicator={false}>
           {/* Filter pills */}
           <View style={td.filterRow}>
             {(['all', 'pending', 'done'] as const).map(f => (
@@ -1099,7 +1228,7 @@ function TeacherDashboard() {
 
       {/* ── GROUPS ── */}
       {tab === 'groups' && (
-        <ScrollView style={s.screen} contentContainerStyle={td.listContent} showsVerticalScrollIndicator={false}>
+        <ScrollView style={th.screen} contentContainerStyle={td.listContent} showsVerticalScrollIndicator={false}>
           {allGroups.length === 0
             ? <View style={td.emptyWrap}><Ionicons name="people-outline" size={36} color="#334155" /><Text style={td.emptyText}>No groups yet.</Text></View>
             : allGroups.map((g, idx) => (
@@ -1124,7 +1253,7 @@ function TeacherDashboard() {
 
       {/* ── STUDENTS ── */}
       {tab === 'students' && (
-        <ScrollView style={s.screen} contentContainerStyle={td.listContent} showsVerticalScrollIndicator={false}>
+        <ScrollView style={th.screen} contentContainerStyle={td.listContent} showsVerticalScrollIndicator={false}>
           {students.length === 0
             ? <View style={td.emptyWrap}><Ionicons name="school-outline" size={36} color="#334155" /><Text style={td.emptyText}>No students registered yet.</Text></View>
             : students.map((st, idx) => (
@@ -1158,10 +1287,11 @@ function TeacherDashboard() {
 // ─────────────────────────────────────────────
 export default function HomeScreen() {
   const { userProfile, loading } = useFirebase();
+  const { isDark } = useTheme();
 
   if (loading) {
     return (
-      <SafeAreaView style={s.safe} edges={['top']}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: isDark ? '#0F172A' : '#F1F5F9' }} edges={['top']}>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#6366F1" />
         </View>

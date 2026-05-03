@@ -1,8 +1,9 @@
 import SimpleTimePicker from '@/components/SimpleTimePicker';
 import { useFirebase } from '@/contexts/FirebaseContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { GroupSharedTask, Schedule, Task, addScheduleItem, deleteScheduleItem, subscribeToAllSchedule, subscribeToGroupSharedTasks, subscribeToStudyGroups, subscribeToTasks } from '@/firebase/firestore';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
     Alert,
     Modal,
@@ -15,12 +16,6 @@ import {
     View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-const BG = '#0F172A';
-const SURFACE = '#1E293B';
-const BORDER = '#334155';
-const TEXT = '#F1F5F9';
-const MUTED = '#94A3B8';
 
 const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const SAMPLE_COLORS = ['#6366F1', '#F59E0B', '#10B981', '#EC4899', '#8B5CF6', '#14B8A6'];
@@ -51,6 +46,13 @@ function parseDueDate(due: string): Date | null {
 
 export default function ScheduleScreen() {
   const { user } = useFirebase();
+  const { isDark } = useTheme();
+  const BG = isDark ? '#0F172A' : '#F1F5F9';
+  const SURFACE = isDark ? '#1E293B' : '#FFFFFF';
+  const BORDER = isDark ? '#334155' : '#E2E8F0';
+  const TEXT = isDark ? '#F1F5F9' : '#0F172A';
+  const MUTED = isDark ? '#94A3B8' : '#64748B';
+  const sc = useMemo(() => createScheduleStyles(BG, SURFACE, BORDER, TEXT, MUTED), [isDark]);
   const today = new Date();
 
   const [viewYear, setViewYear] = useState(today.getFullYear());
@@ -386,73 +388,75 @@ export default function ScheduleScreen() {
   );
 }
 
-const sc = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: BG },
-  screen: { flex: 1, backgroundColor: BG },
-  content: { padding: 16, gap: 16, paddingBottom: 100 },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 4 },
-  title: { color: TEXT, fontSize: 22, fontWeight: '800' },
-  avatar: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#6366F1', justifyContent: 'center', alignItems: 'center' },
-  avatarText: { color: '#fff', fontSize: 13, fontWeight: '700' },
-  // Calendar
-  calCard: { backgroundColor: SURFACE, borderRadius: 16, borderWidth: 1, borderColor: BORDER, padding: 16, gap: 10 },
-  monthNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  navBtn: { width: 32, height: 32, borderRadius: 8, backgroundColor: BG, borderWidth: 1, borderColor: BORDER, justifyContent: 'center', alignItems: 'center' },
-  monthText: { color: TEXT, fontSize: 15, fontWeight: '800' },
-  gridRow: { flexDirection: 'row' },
-  gridDayLabel: { flex: 1, textAlign: 'center', color: MUTED, fontSize: 11, fontWeight: '700', paddingBottom: 6 },
-  gridCell: { flex: 1, alignItems: 'center', paddingVertical: 6, borderRadius: 8, gap: 2, minHeight: 46 },
-  gridCellSelected: { backgroundColor: '#6366F1' },
-  gridCellToday: { backgroundColor: '#6366F122', borderWidth: 1, borderColor: '#6366F166' },
-  gridCellText: { color: TEXT, fontSize: 13, fontWeight: '600' },
-  gridCellTextSelected: { color: '#fff', fontWeight: '800' },
-  gridCellTextToday: { color: '#818CF8', fontWeight: '800' },
-  dotRow: { flexDirection: 'row', gap: 3, justifyContent: 'center' },
-  dot: { width: 5, height: 5, borderRadius: 3 },
-  legend: { flexDirection: 'row', gap: 16, paddingTop: 4 },
-  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  legendText: { color: MUTED, fontSize: 11 },
-  // Section
-  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  sectionTitle: { color: TEXT, fontSize: 16, fontWeight: '800' },
-  subSectionTitle: { color: MUTED, fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
-  addBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#6366F1', borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12 },
-  addBtnText: { color: '#fff', fontSize: 12, fontWeight: '700' },
-  section: { gap: 10 },
-  emptyBox: { alignItems: 'center', gap: 8, paddingVertical: 24, backgroundColor: SURFACE, borderRadius: 14, borderWidth: 1, borderColor: BORDER },
-  emptyText: { color: MUTED, fontSize: 13 },
-  // Classes
-  classRow: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: SURFACE, borderRadius: 14, borderWidth: 1, borderColor: BORDER, padding: 14 },
-  classTime: { color: MUTED, fontSize: 11, fontWeight: '600', width: 52, lineHeight: 16 },
-  classAccent: { width: 3, height: 36, borderRadius: 2 },
-  classBody: { flex: 1, gap: 4 },
-  classSubject: { color: TEXT, fontSize: 14, fontWeight: '700' },
-  classMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  classMetaText: { color: MUTED, fontSize: 12 },
-  // Tasks
-  taskRow: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: SURFACE, borderRadius: 14, borderWidth: 1, borderColor: BORDER, padding: 14 },
-  taskDot: { width: 8, height: 8, borderRadius: 4 },
-  taskTitle: { color: TEXT, fontSize: 14, fontWeight: '600' },
-  taskDone: { textDecorationLine: 'line-through', color: MUTED },
-  taskMeta: { color: MUTED, fontSize: 12 },
-  priorityBadge: { borderRadius: 6, paddingVertical: 3, paddingHorizontal: 8 },
-  priorityText: { fontSize: 11, fontWeight: '700' },
-  // FAB & Modal
-  fab: { position: 'absolute', bottom: 24, right: 20, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#6366F1', borderRadius: 24, paddingVertical: 12, paddingHorizontal: 20, elevation: 4 },
-  fabText: { color: '#fff', fontWeight: '700', fontSize: 14 },
-  overlay: { flex: 1, backgroundColor: '#00000088', justifyContent: 'flex-end' },
-  sheet: { backgroundColor: SURFACE, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 12 },
-  sheetTitle: { color: TEXT, fontSize: 18, fontWeight: '800', marginBottom: 4 },
-  fieldLabel: { color: MUTED, fontSize: 13, fontWeight: '500' },
-  fieldInput: { backgroundColor: BG, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 14, paddingVertical: 12, color: TEXT, fontSize: 14 },
-  colorRow: { flexDirection: 'row', gap: 12 },
-  colorSwatch: { width: 32, height: 32, borderRadius: 16 },
-  colorSwatchActive: { borderWidth: 3, borderColor: '#fff' },
-  sheetActions: { flexDirection: 'row', gap: 12, marginTop: 8 },
-  cancelBtn: { flex: 1, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingVertical: 13, alignItems: 'center' },
-  cancelBtnText: { color: MUTED, fontSize: 14, fontWeight: '600' },
-  saveBtn: { flex: 1, borderRadius: 12, backgroundColor: '#6366F1', paddingVertical: 13, alignItems: 'center' },
-  saveBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
-  groupTaskBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 3 },
-  groupTaskBadgeText: { color: '#818CF8', fontSize: 10, fontWeight: '600' },
-});
+function createScheduleStyles(BG: string, SURFACE: string, BORDER: string, TEXT: string, MUTED: string) {
+  return StyleSheet.create({
+    safe: { flex: 1, backgroundColor: BG },
+    screen: { flex: 1, backgroundColor: BG },
+    content: { padding: 16, gap: 16, paddingBottom: 100 },
+    header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 4 },
+    title: { color: TEXT, fontSize: 22, fontWeight: '800' },
+    avatar: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#6366F1', justifyContent: 'center', alignItems: 'center' },
+    avatarText: { color: '#fff', fontSize: 13, fontWeight: '700' },
+    // Calendar
+    calCard: { backgroundColor: SURFACE, borderRadius: 16, borderWidth: 1, borderColor: BORDER, padding: 16, gap: 10 },
+    monthNav: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+    navBtn: { width: 32, height: 32, borderRadius: 8, backgroundColor: BG, borderWidth: 1, borderColor: BORDER, justifyContent: 'center', alignItems: 'center' },
+    monthText: { color: TEXT, fontSize: 15, fontWeight: '800' },
+    gridRow: { flexDirection: 'row' },
+    gridDayLabel: { flex: 1, textAlign: 'center', color: MUTED, fontSize: 11, fontWeight: '700', paddingBottom: 6 },
+    gridCell: { flex: 1, alignItems: 'center', paddingVertical: 6, borderRadius: 8, gap: 2, minHeight: 46 },
+    gridCellSelected: { backgroundColor: '#6366F1' },
+    gridCellToday: { backgroundColor: '#6366F122', borderWidth: 1, borderColor: '#6366F166' },
+    gridCellText: { color: TEXT, fontSize: 13, fontWeight: '600' },
+    gridCellTextSelected: { color: '#fff', fontWeight: '800' },
+    gridCellTextToday: { color: '#818CF8', fontWeight: '800' },
+    dotRow: { flexDirection: 'row', gap: 3, justifyContent: 'center' },
+    dot: { width: 5, height: 5, borderRadius: 3 },
+    legend: { flexDirection: 'row', gap: 16, paddingTop: 4 },
+    legendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+    legendText: { color: MUTED, fontSize: 11 },
+    // Section
+    sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+    sectionTitle: { color: TEXT, fontSize: 16, fontWeight: '800' },
+    subSectionTitle: { color: MUTED, fontSize: 12, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 0.5 },
+    addBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#6366F1', borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12 },
+    addBtnText: { color: '#fff', fontSize: 12, fontWeight: '700' },
+    section: { gap: 10 },
+    emptyBox: { alignItems: 'center', gap: 8, paddingVertical: 24, backgroundColor: SURFACE, borderRadius: 14, borderWidth: 1, borderColor: BORDER },
+    emptyText: { color: MUTED, fontSize: 13 },
+    // Classes
+    classRow: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: SURFACE, borderRadius: 14, borderWidth: 1, borderColor: BORDER, padding: 14 },
+    classTime: { color: MUTED, fontSize: 11, fontWeight: '600', width: 52, lineHeight: 16 },
+    classAccent: { width: 3, height: 36, borderRadius: 2 },
+    classBody: { flex: 1, gap: 4 },
+    classSubject: { color: TEXT, fontSize: 14, fontWeight: '700' },
+    classMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+    classMetaText: { color: MUTED, fontSize: 12 },
+    // Tasks
+    taskRow: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: SURFACE, borderRadius: 14, borderWidth: 1, borderColor: BORDER, padding: 14 },
+    taskDot: { width: 8, height: 8, borderRadius: 4 },
+    taskTitle: { color: TEXT, fontSize: 14, fontWeight: '600' },
+    taskDone: { textDecorationLine: 'line-through', color: MUTED },
+    taskMeta: { color: MUTED, fontSize: 12 },
+    priorityBadge: { borderRadius: 6, paddingVertical: 3, paddingHorizontal: 8 },
+    priorityText: { fontSize: 11, fontWeight: '700' },
+    // FAB & Modal
+    fab: { position: 'absolute', bottom: 24, right: 20, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#6366F1', borderRadius: 24, paddingVertical: 12, paddingHorizontal: 20, elevation: 4 },
+    fabText: { color: '#fff', fontWeight: '700', fontSize: 14 },
+    overlay: { flex: 1, backgroundColor: '#00000088', justifyContent: 'flex-end' },
+    sheet: { backgroundColor: SURFACE, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 12 },
+    sheetTitle: { color: TEXT, fontSize: 18, fontWeight: '800', marginBottom: 4 },
+    fieldLabel: { color: MUTED, fontSize: 13, fontWeight: '500' },
+    fieldInput: { backgroundColor: BG, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 14, paddingVertical: 12, color: TEXT, fontSize: 14 },
+    colorRow: { flexDirection: 'row', gap: 12 },
+    colorSwatch: { width: 32, height: 32, borderRadius: 16 },
+    colorSwatchActive: { borderWidth: 3, borderColor: '#fff' },
+    sheetActions: { flexDirection: 'row', gap: 12, marginTop: 8 },
+    cancelBtn: { flex: 1, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingVertical: 13, alignItems: 'center' },
+    cancelBtnText: { color: MUTED, fontSize: 14, fontWeight: '600' },
+    saveBtn: { flex: 1, borderRadius: 12, backgroundColor: '#6366F1', paddingVertical: 13, alignItems: 'center' },
+    saveBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
+    groupTaskBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, marginTop: 3 },
+    groupTaskBadgeText: { color: '#818CF8', fontSize: 10, fontWeight: '600' },
+  });
+}

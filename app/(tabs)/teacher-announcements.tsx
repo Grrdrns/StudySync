@@ -1,4 +1,5 @@
 import { useFirebase } from '@/contexts/FirebaseContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { Announcement, addAnnouncement, deleteAnnouncement, subscribeToAnnouncements } from '@/firebase/firestore';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
@@ -14,11 +15,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const BG = '#0F172A';
-const SURFACE = '#1E293B';
-const BORDER = '#334155';
-const TEXT = '#F1F5F9';
-const MUTED = '#94A3B8';
+// Theme colors are now provided via useTheme() inside the component
 
 type Category = 'General' | 'Exam' | 'Homework' | 'Reminder' | 'Event';
 
@@ -32,6 +29,12 @@ const CATEGORY_COLOR: Record<Category, string> = {
 
 export default function AnnouncementsScreen() {
   const { user, userProfile } = useFirebase();
+  const { isDark, colors } = useTheme();
+  const BG = colors.bg;
+  const SURFACE = colors.surface;
+  const BORDER = colors.border;
+  const TEXT = colors.text;
+  const MUTED = colors.muted;
   const [announcements, setAnnouncements] = useState<Announcement[]>([]);
   const [search, setSearch] = useState('');
   const [newModal, setNewModal] = useState(false);
@@ -103,11 +106,11 @@ export default function AnnouncementsScreen() {
   }
 
   return (
-    <SafeAreaView style={an.safe} edges={['top']}>
+    <SafeAreaView style={[an.safe, { backgroundColor: BG }]} edges={['top']}>
       <View style={an.header}>
         <View>
-          <Text style={an.title}>Announcements</Text>
-          <Text style={an.subtitle}>Manage classroom updates</Text>
+          <Text style={[an.title, { color: TEXT }]}>Announcements</Text>
+          <Text style={[an.subtitle, { color: MUTED }]}>Manage classroom updates</Text>
         </View>
         <View style={[an.avatar, { backgroundColor: '#8B5CF6' }]}>
           <Text style={an.avatarText}>{initials}</Text>
@@ -115,10 +118,10 @@ export default function AnnouncementsScreen() {
       </View>
 
       <View style={an.searchRow}>
-        <View style={an.searchBox}>
+        <View style={[an.searchBox, { backgroundColor: SURFACE, borderColor: BORDER }]}>
           <Ionicons name="search-outline" size={16} color={MUTED} />
           <TextInput
-            style={an.searchInput}
+            style={[an.searchInput, { color: TEXT }]}
             placeholder="Search announcements..."
             placeholderTextColor={MUTED}
             value={search}
@@ -131,11 +134,11 @@ export default function AnnouncementsScreen() {
         {filtered.length === 0 ? (
           <View style={an.emptyBox}>
             <Ionicons name="megaphone-outline" size={48} color={MUTED} />
-            <Text style={an.emptyTitle}>No announcements yet</Text>
-            <Text style={an.emptySubtitle}>Tap "+ New Announcement" to post one for your students.</Text>
+            <Text style={[an.emptyTitle, { color: TEXT }]}>No announcements yet</Text>
+            <Text style={[an.emptySubtitle, { color: MUTED }]}>Tap "+ New Announcement" to post one for your students.</Text>
           </View>
         ) : filtered.map(item => (
-          <View key={item.id} style={[an.card, item.pinned && an.cardPinned]}>
+          <View key={item.id} style={[an.card, { backgroundColor: SURFACE, borderColor: BORDER }, item.pinned && an.cardPinned]}>
             <View style={an.cardHeader}>
               <View style={{ flex: 1, gap: 4 }}>
                 {item.pinned && (
@@ -144,7 +147,7 @@ export default function AnnouncementsScreen() {
                     <Text style={an.pinnedText}>Pinned</Text>
                   </View>
                 )}
-                <Text style={an.cardTitle}>{item.title}</Text>
+                <Text style={[an.cardTitle, { color: TEXT }]}>{item.title}</Text>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                 <View style={[an.catBadge, { backgroundColor: CATEGORY_COLOR[item.category] + '22' }]}>
@@ -155,8 +158,8 @@ export default function AnnouncementsScreen() {
                 </TouchableOpacity>
               </View>
             </View>
-            <Text style={an.cardMeta}>by {item.teacherName} · {timeAgo(item.createdAt)}</Text>
-            <Text style={an.cardContent}>{item.content}</Text>
+            <Text style={[an.cardMeta, { color: MUTED }]}>by {item.teacherName} · {timeAgo(item.createdAt)}</Text>
+            <Text style={[an.cardContent, { color: MUTED }]}>{item.content}</Text>
           </View>
         ))}
       </ScrollView>
@@ -168,12 +171,12 @@ export default function AnnouncementsScreen() {
 
       <Modal visible={newModal} transparent animationType="slide" onRequestClose={() => setNewModal(false)}>
         <View style={an.overlay}>
-          <SafeAreaView style={an.sheet} edges={['bottom']}>
+          <SafeAreaView style={[an.sheet, { backgroundColor: BG }]} edges={['bottom']}>
             <View style={an.sheetTopRow}>
-              <TouchableOpacity onPress={() => setNewModal(false)} style={an.backBtn}>
+              <TouchableOpacity onPress={() => setNewModal(false)} style={[an.backBtn, { backgroundColor: SURFACE, borderColor: BORDER }]}>
                 <Ionicons name="arrow-back" size={18} color={TEXT} />
               </TouchableOpacity>
-              <Text style={an.sheetTitle}>New Announcement</Text>
+              <Text style={[an.sheetTitle, { color: TEXT }]}>New Announcement</Text>
               <TouchableOpacity style={[an.publishBtn, publishing && { opacity: 0.6 }]} onPress={handlePublish} disabled={publishing}>
                 <Text style={an.publishBtnText}>{publishing ? 'Publishing…' : 'Publish'}</Text>
               </TouchableOpacity>
@@ -181,45 +184,45 @@ export default function AnnouncementsScreen() {
 
             <ScrollView contentContainerStyle={{ gap: 14, paddingBottom: 20 }} showsVerticalScrollIndicator={false}>
               <View>
-                <Text style={an.fieldLabel}>Title</Text>
+                <Text style={[an.fieldLabel, { color: MUTED }]}>Title</Text>
                 <TextInput
-                  style={an.fieldInput}
+                  style={[an.fieldInput, { backgroundColor: SURFACE, borderColor: BORDER, color: TEXT }]}
                   placeholder="e.g. Midterm Project Guidelines"
-                  placeholderTextColor="#4B5563"
+                  placeholderTextColor={MUTED}
                   value={title}
                   onChangeText={setTitle}
                 />
               </View>
 
               <View>
-                <Text style={an.fieldLabel}>Category</Text>
+                <Text style={[an.fieldLabel, { color: MUTED }]}>Category</Text>
                 <View style={an.catRow}>
                   {(['General', 'Exam', 'Homework', 'Reminder', 'Event'] as Category[]).map(c => (
                     <TouchableOpacity
                       key={c}
-                      style={[an.catChip, category === c && { backgroundColor: CATEGORY_COLOR[c] + '33', borderColor: CATEGORY_COLOR[c] }]}
+                      style={[an.catChip, { borderColor: BORDER, backgroundColor: SURFACE }, category === c && { backgroundColor: CATEGORY_COLOR[c] + '33', borderColor: CATEGORY_COLOR[c] }]}
                       onPress={() => setCategory(c)}>
-                      <Text style={[an.catChipText, category === c && { color: CATEGORY_COLOR[c] }]}>{c}</Text>
+                      <Text style={[an.catChipText, { color: MUTED }, category === c && { color: CATEGORY_COLOR[c] }]}>{c}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
               </View>
 
               <View>
-                <Text style={an.fieldLabel}>Content</Text>
+                <Text style={[an.fieldLabel, { color: MUTED }]}>Content</Text>
                 <TextInput
-                  style={[an.fieldInput, { height: 120, textAlignVertical: 'top' }]}
+                  style={[an.fieldInput, { height: 120, textAlignVertical: 'top', backgroundColor: SURFACE, borderColor: BORDER, color: TEXT }]}
                   placeholder="Write your announcement here..."
-                  placeholderTextColor="#4B5563"
+                  placeholderTextColor={MUTED}
                   value={content}
                   onChangeText={setContent}
                   multiline
                 />
               </View>
 
-              <View style={an.toggleRow}>
+              <View style={[an.toggleRow, { backgroundColor: SURFACE, borderColor: BORDER }]}>
                 <View style={{ flex: 1 }}>
-                  <Text style={an.toggleLabel}>Pin to top of class feed</Text>
+                  <Text style={[an.toggleLabel, { color: TEXT }]}>Pin to top of class feed</Text>
                   <Text style={[an.toggleLabel, { fontSize: 11, color: MUTED, marginTop: 2 }]}>Pinned announcements appear first for students</Text>
                 </View>
                 <TouchableOpacity
@@ -237,45 +240,45 @@ export default function AnnouncementsScreen() {
 }
 
 const an = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: BG },
+  safe: { flex: 1 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 12, paddingBottom: 8 },
-  title: { color: TEXT, fontSize: 22, fontWeight: '800' },
-  subtitle: { color: MUTED, fontSize: 12, marginTop: 2 },
+  title: { fontSize: 22, fontWeight: '800' },
+  subtitle: { fontSize: 12, marginTop: 2 },
   avatar: { width: 38, height: 38, borderRadius: 19, justifyContent: 'center', alignItems: 'center' },
   avatarText: { color: '#fff', fontSize: 13, fontWeight: '700' },
   searchRow: { paddingHorizontal: 16, paddingBottom: 10 },
-  searchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: SURFACE, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 12, paddingVertical: 10 },
-  searchInput: { flex: 1, color: TEXT, fontSize: 14 },
+  searchBox: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 12, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 10 },
+  searchInput: { flex: 1, fontSize: 14 },
   emptyBox: { alignItems: 'center', gap: 12, paddingVertical: 60, paddingHorizontal: 32 },
-  emptyTitle: { color: TEXT, fontSize: 18, fontWeight: '700' },
-  emptySubtitle: { color: MUTED, fontSize: 14, textAlign: 'center', lineHeight: 20 },
-  card: { backgroundColor: SURFACE, borderRadius: 14, borderWidth: 1, borderColor: BORDER, padding: 16, gap: 8 },
+  emptyTitle: { fontSize: 18, fontWeight: '700' },
+  emptySubtitle: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  card: { borderRadius: 14, borderWidth: 1, padding: 16, gap: 8 },
   cardPinned: { borderColor: '#6366F155', backgroundColor: '#6366F108' },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 },
-  cardTitle: { color: TEXT, fontSize: 15, fontWeight: '700', flex: 1 },
+  cardTitle: { fontSize: 15, fontWeight: '700', flex: 1 },
   catBadge: { borderRadius: 6, paddingVertical: 3, paddingHorizontal: 8 },
   catBadgeText: { fontSize: 11, fontWeight: '700' },
-  cardDate: { color: MUTED, fontSize: 11 },
-  cardMeta: { color: MUTED, fontSize: 11 },
-  cardContent: { color: MUTED, fontSize: 13, lineHeight: 19 },
+  cardDate: { fontSize: 11 },
+  cardMeta: { fontSize: 11 },
+  cardContent: { fontSize: 13, lineHeight: 19 },
   pinnedRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   pinnedText: { color: '#818CF8', fontSize: 11 },
   fab: { position: 'absolute', bottom: 24, right: 20, flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#8B5CF6', borderRadius: 24, paddingVertical: 12, paddingHorizontal: 20, elevation: 4 },
   fabText: { color: '#fff', fontWeight: '700', fontSize: 14 },
   overlay: { flex: 1, backgroundColor: '#000000AA' },
-  sheet: { flex: 1, backgroundColor: BG, margin: 0, paddingHorizontal: 20, paddingTop: 16 },
+  sheet: { flex: 1, margin: 0, paddingHorizontal: 20, paddingTop: 16 },
   sheetTopRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
-  backBtn: { width: 34, height: 34, borderRadius: 10, backgroundColor: SURFACE, borderWidth: 1, borderColor: BORDER, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
-  sheetTitle: { flex: 1, color: TEXT, fontSize: 17, fontWeight: '700' },
+  backBtn: { width: 34, height: 34, borderRadius: 10, borderWidth: 1, justifyContent: 'center', alignItems: 'center', marginRight: 10 },
+  sheetTitle: { flex: 1, fontSize: 17, fontWeight: '700' },
   publishBtn: { backgroundColor: '#8B5CF6', borderRadius: 10, paddingVertical: 8, paddingHorizontal: 18 },
   publishBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
-  fieldLabel: { color: MUTED, fontSize: 13, fontWeight: '500', marginBottom: 6 },
-  fieldInput: { backgroundColor: SURFACE, borderRadius: 12, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 14, paddingVertical: 12, color: TEXT, fontSize: 14 },
+  fieldLabel: { fontSize: 13, fontWeight: '500', marginBottom: 6 },
+  fieldInput: { borderRadius: 12, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14 },
   catRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  catChip: { borderRadius: 20, borderWidth: 1, borderColor: BORDER, paddingVertical: 6, paddingHorizontal: 14, backgroundColor: SURFACE },
-  catChipText: { color: MUTED, fontSize: 12, fontWeight: '600' },
-  toggleRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: SURFACE, borderRadius: 12, borderWidth: 1, borderColor: BORDER, padding: 14 },
-  toggleLabel: { color: TEXT, fontSize: 14, fontWeight: '500' },
+  catChip: { borderRadius: 20, borderWidth: 1, paddingVertical: 6, paddingHorizontal: 14 },
+  catChipText: { fontSize: 12, fontWeight: '600' },
+  toggleRow: { flexDirection: 'row', alignItems: 'center', borderRadius: 12, borderWidth: 1, padding: 14 },
+  toggleLabel: { fontSize: 14, fontWeight: '500' },
   toggle: { width: 46, height: 26, borderRadius: 13, backgroundColor: '#374151', justifyContent: 'center', paddingHorizontal: 3 },
   toggleOn: { backgroundColor: '#6366F1' },
   toggleThumb: { width: 20, height: 20, borderRadius: 10, backgroundColor: '#9CA3AF' },

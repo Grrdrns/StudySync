@@ -1,6 +1,7 @@
 import SimpleDatePicker from '@/components/SimpleDatePicker';
 import SimpleTimePicker from '@/components/SimpleTimePicker';
 import { useFirebase } from '@/contexts/FirebaseContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { db } from '@/firebase/config';
 import {
     AssignedTask,
@@ -28,11 +29,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const BG = '#0F172A';
-const SURFACE = '#1E293B';
-const BORDER = '#334155';
-const TEXT = '#F1F5F9';
-const MUTED = '#94A3B8';
+// Theme colors are now provided via useTheme() inside the component
 
 type Priority = 'Low' | 'Medium' | 'High';
 
@@ -63,6 +60,12 @@ function buildDeadline(dateObj: Date, timeStr: string): number {
 
 export default function TeacherTasksScreen() {
   const { user, userProfile } = useFirebase();
+  const { isDark, colors } = useTheme();
+  const BG = colors.bg;
+  const SURFACE = colors.surface;
+  const BORDER = colors.border;
+  const TEXT = colors.text;
+  const MUTED = colors.muted;
 
   const [students, setStudents] = useState<Student[]>([]);
   const [loadingStudents, setLoadingStudents] = useState(true);
@@ -202,13 +205,13 @@ export default function TeacherTasksScreen() {
   }
 
   return (
-    <SafeAreaView style={tt.safe} edges={['top']}>
-      <ScrollView style={tt.screen} contentContainerStyle={tt.content} showsVerticalScrollIndicator={false}>
+    <SafeAreaView style={[tt.safe, { backgroundColor: BG }]} edges={['top']}>
+      <ScrollView style={[tt.screen, { backgroundColor: BG }]} contentContainerStyle={tt.content} showsVerticalScrollIndicator={false}>
 
         <View style={tt.header}>
           <View>
-            <Text style={tt.title}>Assign Tasks</Text>
-            <Text style={tt.subtitle}>Create assignments for your students</Text>
+            <Text style={[tt.title, { color: TEXT }]}>Assign Tasks</Text>
+            <Text style={[tt.subtitle, { color: MUTED }]}>Create assignments for your students</Text>
           </View>
           <View style={[tt.avatar, { backgroundColor: '#8B5CF6' }]}>
             <Text style={tt.avatarText}>{initials}</Text>
@@ -216,16 +219,16 @@ export default function TeacherTasksScreen() {
         </View>
 
         {/* Form card */}
-        <View style={tt.card}>
+        <View style={[tt.card, { backgroundColor: SURFACE, borderColor: BORDER }]}>
 
           <View>
-            <Text style={tt.fieldLabel}>Assignment Title *</Text>
-            <View style={tt.inputRow}>
+            <Text style={[tt.fieldLabel, { color: MUTED }]}>Assignment Title *</Text>
+            <View style={[tt.inputRow, { backgroundColor: BG, borderColor: BORDER }]}>
               <Ionicons name="document-text-outline" size={16} color={MUTED} style={{ marginRight: 8 }} />
               <TextInput
-                style={tt.fieldInputInline}
+                style={[tt.fieldInputInline, { color: TEXT }]}
                 placeholder="e.g. Midterm Research Paper"
-                placeholderTextColor="#4B5563"
+                placeholderTextColor={MUTED}
                 value={title}
                 onChangeText={setTitle}
               />
@@ -233,11 +236,11 @@ export default function TeacherTasksScreen() {
           </View>
 
           <View>
-            <Text style={tt.fieldLabel}>Instructions / Description</Text>
+            <Text style={[tt.fieldLabel, { color: MUTED }]}>Instructions / Description</Text>
             <TextInput
-              style={[tt.fieldInput, { height: 90, textAlignVertical: 'top' }]}
+              style={[tt.fieldInput, { height: 90, textAlignVertical: 'top', backgroundColor: BG, borderColor: BORDER, color: TEXT }]}
               placeholder="Write instructions for your students..."
-              placeholderTextColor="#4B5563"
+              placeholderTextColor={MUTED}
               value={description}
               onChangeText={setDescription}
               multiline
@@ -245,36 +248,36 @@ export default function TeacherTasksScreen() {
           </View>
 
           <View>
-            <Text style={tt.fieldLabel}>Class / Section *</Text>
+            <Text style={[tt.fieldLabel, { color: MUTED }]}>Class / Section *</Text>
             <TextInput
-              style={tt.fieldInput}
+              style={[tt.fieldInput, { backgroundColor: BG, borderColor: BORDER, color: TEXT }]}
               placeholder="e.g. CS-101"
-              placeholderTextColor="#4B5563"
+              placeholderTextColor={MUTED}
               value={subject}
               onChangeText={setSubject}
             />
           </View>
 
           <View>
-            <Text style={tt.fieldLabel}>Due Date *</Text>
+            <Text style={[tt.fieldLabel, { color: MUTED }]}>Due Date *</Text>
             <SimpleDatePicker value={dueDate} minimumDate={new Date()} onChange={setDueDate} />
           </View>
 
           <View>
-            <Text style={tt.fieldLabel}>Due Time *</Text>
+            <Text style={[tt.fieldLabel, { color: MUTED }]}>Due Time *</Text>
             <SimpleTimePicker value={dueTime} onChange={setDueTime} />
           </View>
 
           <View>
-            <Text style={tt.fieldLabel}>Priority Level</Text>
+            <Text style={[tt.fieldLabel, { color: MUTED }]}>Priority Level</Text>
             <View style={tt.priorityRow}>
               {(['Low', 'Medium', 'High'] as Priority[]).map(p => (
                 <TouchableOpacity
                   key={p}
-                  style={[tt.priorityBtn, priority === p && { backgroundColor: PRIORITY_COLOR[p] + '33', borderColor: PRIORITY_COLOR[p] }]}
+                  style={[tt.priorityBtn, { borderColor: BORDER }, priority === p && { backgroundColor: PRIORITY_COLOR[p] + '33', borderColor: PRIORITY_COLOR[p] }]}
                   onPress={() => setPriority(p)}>
                   {priority === p && <Ionicons name="checkmark" size={12} color={PRIORITY_COLOR[p]} />}
-                  <Text style={[tt.priorityBtnText, priority === p && { color: PRIORITY_COLOR[p] }]}>{p}</Text>
+                  <Text style={[tt.priorityBtnText, { color: MUTED }, priority === p && { color: PRIORITY_COLOR[p] }]}>{p}</Text>
                 </TouchableOpacity>
               ))}
             </View>
@@ -282,10 +285,10 @@ export default function TeacherTasksScreen() {
 
           {/* Attachment picker */}
           <View>
-            <Text style={tt.fieldLabel}>Attach File (PDF, DOC, etc.)</Text>
-            <TouchableOpacity style={tt.attachBtn} onPress={pickAttachment}>
+            <Text style={[tt.fieldLabel, { color: MUTED }]}>Attach File (PDF, DOC, etc.)</Text>
+            <TouchableOpacity style={[tt.attachBtn, { backgroundColor: BG, borderColor: BORDER }]} onPress={pickAttachment}>
               <Ionicons name={attachFile ? 'document' : 'attach-outline'} size={18} color={attachFile ? '#818CF8' : MUTED} />
-              <Text style={[tt.attachBtnText, attachFile && { color: '#818CF8' }]} numberOfLines={1}>
+              <Text style={[tt.attachBtnText, { color: MUTED }, attachFile && { color: '#818CF8' }]} numberOfLines={1}>
                 {attachFile ? attachFile.name : 'Tap to attach a file…'}
               </Text>
               {attachFile && (
@@ -308,7 +311,7 @@ export default function TeacherTasksScreen() {
             {loadingStudents ? (
               <ActivityIndicator size="small" color="#6366F1" />
             ) : (
-              <Text style={tt.studentInfoText}>
+              <Text style={[tt.studentInfoText, { color: MUTED }]}>
                 Will be assigned to <Text style={{ color: '#818CF8', fontWeight: '700' }}>{students.length} student{students.length !== 1 ? 's' : ''}</Text>
               </Text>
             )}
@@ -327,13 +330,13 @@ export default function TeacherTasksScreen() {
         {/* Published tasks list */}
         {publishedTasks.length > 0 && (
           <View style={tt.section}>
-            <Text style={tt.sectionTitle}>Published Assignments</Text>
+            <Text style={[tt.sectionTitle, { color: TEXT }]}>Published Assignments</Text>
             {publishedTasks.map(task => {
               const isPast = Date.now() > task.dueDateTimestamp;
               return (
-                <TouchableOpacity key={task.id} style={tt.publishedCard} activeOpacity={0.75} onPress={() => setDetailTask(task)}>
+                <TouchableOpacity key={task.id} style={[tt.publishedCard, { backgroundColor: SURFACE, borderColor: BORDER }]} activeOpacity={0.75} onPress={() => setDetailTask(task)}>
                   <View style={tt.publishedHeader}>
-                    <Text style={tt.publishedTitle} numberOfLines={1}>{task.title}</Text>
+                    <Text style={[tt.publishedTitle, { color: TEXT }]} numberOfLines={1}>{task.title}</Text>
                     <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
                       {isPast && <View style={tt.lockedBadge}><Ionicons name="lock-closed" size={10} color="#EF4444" /><Text style={tt.lockedBadgeText}>Closed</Text></View>}
                       <View style={[tt.priBadge, { backgroundColor: PRIORITY_COLOR[task.priority] + '22' }]}>
@@ -341,7 +344,7 @@ export default function TeacherTasksScreen() {
                       </View>
                     </View>
                   </View>
-                  <Text style={tt.publishedMeta}>{task.subject} · Due {task.dueDate} {task.dueTime}</Text>
+                  <Text style={[tt.publishedMeta, { color: MUTED }]}>{task.subject} · Due {task.dueDate} {task.dueTime}</Text>
                   {task.attachmentName && (
                     <View style={tt.attachChip}>
                       <Ionicons name="document-attach-outline" size={11} color="#818CF8" />
@@ -360,20 +363,20 @@ export default function TeacherTasksScreen() {
       {/* Submission detail modal */}
       <Modal visible={!!detailTask} transparent animationType="slide" onRequestClose={() => setDetailTask(null)}>
         <View style={tt.overlay}>
-          <View style={tt.sheet}>
+          <View style={[tt.sheet, { backgroundColor: SURFACE }]}>
             {detailTask && (
               <>
                 <View style={tt.sheetHeaderRow}>
                   <View style={{ flex: 1 }}>
-                    <Text style={tt.sheetTitle}>{detailTask.title}</Text>
-                    <Text style={tt.sheetMeta}>{detailTask.subject} · Due {detailTask.dueDate} {detailTask.dueTime}</Text>
+                    <Text style={[tt.sheetTitle, { color: TEXT }]}>{detailTask.title}</Text>
+                    <Text style={[tt.sheetMeta, { color: MUTED }]}>{detailTask.subject} · Due {detailTask.dueDate} {detailTask.dueTime}</Text>
                   </View>
                   <View style={[tt.priBadge, { backgroundColor: PRIORITY_COLOR[detailTask.priority] + '22' }]}>
                     <Text style={[tt.priBadgeText, { color: PRIORITY_COLOR[detailTask.priority] }]}>{detailTask.priority}</Text>
                   </View>
                 </View>
                 {detailTask.description ? (
-                  <Text style={tt.sheetDesc}>{detailTask.description}</Text>
+                  <Text style={[tt.sheetDesc, { color: MUTED, borderTopColor: BORDER }]}>{detailTask.description}</Text>
                 ) : null}
                 {detailTask.attachmentUrl && (
                   <TouchableOpacity style={tt.sheetAttachBtn} onPress={() => Linking.openURL(detailTask.attachmentUrl!)}>
@@ -382,16 +385,16 @@ export default function TeacherTasksScreen() {
                     <Ionicons name="open-outline" size={13} color="#818CF8" />
                   </TouchableOpacity>
                 )}
-                <Text style={tt.sheetSubsTitle}>Submissions ({submissions.length} / {detailTask.assignedToUids.length})</Text>
+                <Text style={[tt.sheetSubsTitle, { color: TEXT, borderTopColor: BORDER }]}>Submissions ({submissions.length} / {detailTask.assignedToUids.length})</Text>
                 <ScrollView style={{ maxHeight: 240 }} showsVerticalScrollIndicator={false}>
                   {submissions.length === 0 ? (
-                    <Text style={tt.emptyText}>No submissions yet.</Text>
+                    <Text style={[tt.emptyText, { color: MUTED }]}>No submissions yet.</Text>
                   ) : submissions.map((s, i) => (
-                    <View key={i} style={tt.subRow}>
+                    <View key={i} style={[tt.subRow, { borderBottomColor: BORDER }]}>
                       <Ionicons name="checkmark-circle" size={16} color="#10B981" />
                       <View style={{ flex: 1 }}>
-                        <Text style={tt.subName}>{s.studentName}</Text>
-                        <Text style={tt.subTime}>{timeAgo(s.submittedAt)}</Text>
+                        <Text style={[tt.subName, { color: TEXT }]}>{s.studentName}</Text>
+                        <Text style={[tt.subTime, { color: MUTED }]}>{timeAgo(s.submittedAt)}</Text>
                         {s.fileName && (
                           <TouchableOpacity style={tt.subFileChip} onPress={() => s.fileUrl && Linking.openURL(s.fileUrl)}>
                             <Ionicons name="document-outline" size={11} color="#818CF8" />
@@ -403,8 +406,8 @@ export default function TeacherTasksScreen() {
                     </View>
                   ))}
                 </ScrollView>
-                <TouchableOpacity style={tt.closeBtn} onPress={() => setDetailTask(null)}>
-                  <Text style={tt.closeBtnText}>Close</Text>
+                <TouchableOpacity style={[tt.closeBtn, { backgroundColor: BORDER }]} onPress={() => setDetailTask(null)}>
+                  <Text style={[tt.closeBtnText, { color: TEXT }]}>Close</Text>
                 </TouchableOpacity>
               </>
             )}
@@ -416,55 +419,55 @@ export default function TeacherTasksScreen() {
 }
 
 const tt = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: BG },
-  screen: { flex: 1, backgroundColor: BG },
+  safe: { flex: 1 },
+  screen: { flex: 1 },
   content: { padding: 16, gap: 16, paddingBottom: 60 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  title: { color: TEXT, fontSize: 22, fontWeight: '800' },
-  subtitle: { color: MUTED, fontSize: 12, marginTop: 2 },
+  title: { fontSize: 22, fontWeight: '800' },
+  subtitle: { fontSize: 12, marginTop: 2 },
   avatar: { width: 38, height: 38, borderRadius: 19, justifyContent: 'center', alignItems: 'center' },
   avatarText: { color: '#fff', fontSize: 13, fontWeight: '700' },
-  card: { backgroundColor: SURFACE, borderRadius: 16, borderWidth: 1, borderColor: BORDER, padding: 18, gap: 16 },
-  fieldLabel: { color: MUTED, fontSize: 12, fontWeight: '600', marginBottom: 6 },
-  fieldInput: { backgroundColor: BG, borderRadius: 10, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 12, paddingVertical: 11, color: TEXT, fontSize: 14 },
-  inputRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: BG, borderRadius: 10, borderWidth: 1, borderColor: BORDER, paddingHorizontal: 12, paddingVertical: 11 },
-  fieldInputInline: { flex: 1, color: TEXT, fontSize: 14 },
+  card: { borderRadius: 16, borderWidth: 1, padding: 18, gap: 16 },
+  fieldLabel: { fontSize: 12, fontWeight: '600', marginBottom: 6 },
+  fieldInput: { borderRadius: 10, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 11, fontSize: 14 },
+  inputRow: { flexDirection: 'row', alignItems: 'center', borderRadius: 10, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 11 },
+  fieldInputInline: { flex: 1, fontSize: 14 },
   priorityRow: { flexDirection: 'row', gap: 10 },
-  priorityBtn: { flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 4, borderRadius: 10, borderWidth: 1.5, borderColor: BORDER, paddingVertical: 9 },
-  priorityBtnText: { color: MUTED, fontSize: 13, fontWeight: '600' },
+  priorityBtn: { flex: 1, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 4, borderRadius: 10, borderWidth: 1.5, paddingVertical: 9 },
+  priorityBtnText: { fontSize: 13, fontWeight: '600' },
   studentInfo: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#6366F111', borderRadius: 10, padding: 12 },
-  studentInfoText: { color: MUTED, fontSize: 13 },
+  studentInfoText: { fontSize: 13 },
   publishBtn: { borderRadius: 12, backgroundColor: '#6366F1', paddingVertical: 14, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6 },
   publishBtnText: { color: '#fff', fontSize: 14, fontWeight: '700' },
   section: { gap: 10 },
-  sectionTitle: { color: TEXT, fontSize: 15, fontWeight: '700' },
-  publishedCard: { backgroundColor: SURFACE, borderRadius: 12, borderWidth: 1, borderColor: BORDER, padding: 14, gap: 6 },
+  sectionTitle: { fontSize: 15, fontWeight: '700' },
+  publishedCard: { borderRadius: 12, borderWidth: 1, padding: 14, gap: 6 },
   publishedHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  publishedTitle: { color: TEXT, fontSize: 14, fontWeight: '600', flex: 1, marginRight: 8 },
-  publishedMeta: { color: MUTED, fontSize: 12 },
+  publishedTitle: { fontSize: 14, fontWeight: '600', flex: 1, marginRight: 8 },
+  publishedMeta: { fontSize: 12 },
   publishedStudents: { color: '#6366F1', fontSize: 11 },
   lockedBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: '#EF444422', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
   lockedBadgeText: { color: '#EF4444', fontSize: 10, fontWeight: '700' },
   priBadge: { borderRadius: 6, paddingVertical: 3, paddingHorizontal: 8 },
   priBadgeText: { fontSize: 11, fontWeight: '700' },
   overlay: { flex: 1, backgroundColor: '#00000088', justifyContent: 'flex-end' },
-  sheet: { backgroundColor: SURFACE, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 12, maxHeight: '80%' },
+  sheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, gap: 12, maxHeight: '80%' },
   sheetHeaderRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  sheetTitle: { color: TEXT, fontSize: 17, fontWeight: '800' },
-  sheetMeta: { color: MUTED, fontSize: 12, marginTop: 2 },
-  sheetDesc: { color: MUTED, fontSize: 13, lineHeight: 19, borderTopWidth: 1, borderTopColor: BORDER, paddingTop: 10 },
-  sheetSubsTitle: { color: TEXT, fontSize: 14, fontWeight: '700', borderTopWidth: 1, borderTopColor: BORDER, paddingTop: 10 },
-  emptyText: { color: MUTED, fontSize: 13, paddingVertical: 8 },
-  subRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: BORDER },
-  subName: { color: TEXT, fontSize: 13, fontWeight: '600' },
-  subTime: { color: MUTED, fontSize: 11 },
-  closeBtn: { borderRadius: 12, backgroundColor: BORDER, paddingVertical: 13, alignItems: 'center', marginTop: 4 },
-  closeBtnText: { color: TEXT, fontSize: 14, fontWeight: '700' },
-  attachBtn: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: BG, borderRadius: 10, borderWidth: 1, borderColor: BORDER, borderStyle: 'dashed', paddingHorizontal: 14, paddingVertical: 13 },
-  attachBtnText: { flex: 1, color: MUTED, fontSize: 13 },
+  sheetTitle: { fontSize: 17, fontWeight: '800' },
+  sheetMeta: { fontSize: 12, marginTop: 2 },
+  sheetDesc: { fontSize: 13, lineHeight: 19, borderTopWidth: 1, paddingTop: 10 },
+  sheetSubsTitle: { fontSize: 14, fontWeight: '700', borderTopWidth: 1, paddingTop: 10 },
+  emptyText: { fontSize: 13, paddingVertical: 8 },
+  subRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, borderBottomWidth: 1 },
+  subName: { fontSize: 13, fontWeight: '600' },
+  subTime: { fontSize: 11 },
+  closeBtn: { borderRadius: 12, paddingVertical: 13, alignItems: 'center', marginTop: 4 },
+  closeBtnText: { fontSize: 14, fontWeight: '700' },
+  attachBtn: { flexDirection: 'row', alignItems: 'center', gap: 10, borderRadius: 10, borderWidth: 1, borderStyle: 'dashed', paddingHorizontal: 14, paddingVertical: 13 },
+  attachBtnText: { flex: 1, fontSize: 13 },
   progressBarWrap: { marginTop: 8, backgroundColor: '#1E3A5F', borderRadius: 6, height: 6, overflow: 'hidden', flexDirection: 'row', alignItems: 'center' },
   progressBarFill: { height: 6, backgroundColor: '#6366F1', borderRadius: 6 },
-  progressText: { position: 'absolute', right: 0, color: MUTED, fontSize: 10 },
+  progressText: { position: 'absolute', right: 0, fontSize: 10 },
   attachChip: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#818CF811', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start' },
   attachChipText: { color: '#818CF8', fontSize: 11, maxWidth: 200 },
   sheetAttachBtn: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: '#818CF811', borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, borderWidth: 1, borderColor: '#818CF833' },

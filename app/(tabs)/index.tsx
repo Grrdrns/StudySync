@@ -872,15 +872,15 @@ function TeacherDashboard() {
   const renderMemberModal = selectedMember ? (
     <Modal visible transparent animationType="slide" onRequestClose={() => setSelectedMember(null)}>
       <View style={td.modalOverlay}>
-        <View style={td.modalSheet}>
-          <View style={td.modalHandle} />
+        <View style={[td.modalSheet, { backgroundColor: SURFACE }]}>
+          <View style={[td.modalHandle, { backgroundColor: BORDER }]} />
           {/* Avatar + name */}
           <View style={td.mpHeader}>
             <View style={[td.mpAvatar, { backgroundColor: AVATAR_COLORS[selectedMember.displayName.charCodeAt(0) % AVATAR_COLORS.length] }]}>
               <Text style={td.mpAvatarText}>{selectedMember.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)}</Text>
             </View>
-            <Text style={td.mpName}>{selectedMember.displayName}</Text>
-            <Text style={td.mpEmail}>{selectedMember.email}</Text>
+            <Text style={[td.mpName, { color: TEXT }]}>{selectedMember.displayName}</Text>
+            <Text style={[td.mpEmail, { color: MUTED }]}>{selectedMember.email}</Text>
             {selectedMember.role ? (
               <View style={[td.mpRoleBadge, { backgroundColor: selectedMember.role === 'teacher' ? '#8B5CF622' : '#6366F122' }]}>
                 <Text style={[td.mpRoleText, { color: selectedMember.role === 'teacher' ? '#A78BFA' : '#818CF8' }]}>{selectedMember.role.toUpperCase()}</Text>
@@ -891,52 +891,52 @@ function TeacherDashboard() {
           {memberLoading ? (
             <ActivityIndicator color="#818CF8" style={{ marginVertical: 24 }} />
           ) : (
-            <View style={td.modalInfoBox}>
-              <View style={td.modalInfoRow}>
+            <View style={[td.modalInfoBox, { backgroundColor: BG }]}>
+              <View style={[td.modalInfoRow, { borderBottomColor: SURFACE }]}>
                 <View style={td.modalInfoIcon}><Ionicons name="person-outline" size={14} color="#818CF8" /></View>
                 <View>
-                  <Text style={td.modalInfoLabel}>Username</Text>
-                  <Text style={td.modalInfoValue}>{selectedMember.username || '—'}</Text>
+                  <Text style={[td.modalInfoLabel, { color: MUTED }]}>Username</Text>
+                  <Text style={[td.modalInfoValue, { color: TEXT }]}>{selectedMember.username || '—'}</Text>
                 </View>
               </View>
-              <View style={td.modalInfoRow}>
+              <View style={[td.modalInfoRow, { borderBottomColor: SURFACE }]}>
                 <View style={td.modalInfoIcon}><Ionicons name="mail-outline" size={14} color="#818CF8" /></View>
                 <View>
-                  <Text style={td.modalInfoLabel}>Email</Text>
-                  <Text style={td.modalInfoValue}>{selectedMember.email}</Text>
+                  <Text style={[td.modalInfoLabel, { color: MUTED }]}>Email</Text>
+                  <Text style={[td.modalInfoValue, { color: TEXT }]}>{selectedMember.email}</Text>
                 </View>
               </View>
               {selectedMember.role ? (
-                <View style={td.modalInfoRow}>
+                <View style={[td.modalInfoRow, { borderBottomColor: SURFACE }]}>
                   <View style={td.modalInfoIcon}><Ionicons name="shield-outline" size={14} color="#818CF8" /></View>
                   <View>
-                    <Text style={td.modalInfoLabel}>Role</Text>
-                    <Text style={td.modalInfoValue}>{selectedMember.role}</Text>
+                    <Text style={[td.modalInfoLabel, { color: MUTED }]}>Role</Text>
+                    <Text style={[td.modalInfoValue, { color: TEXT }]}>{selectedMember.role}</Text>
                   </View>
                 </View>
               ) : null}
               {selectedMember.age ? (
-                <View style={td.modalInfoRow}>
+                <View style={[td.modalInfoRow, { borderBottomColor: SURFACE }]}>
                   <View style={td.modalInfoIcon}><Ionicons name="calendar-outline" size={14} color="#818CF8" /></View>
                   <View>
-                    <Text style={td.modalInfoLabel}>Age</Text>
-                    <Text style={td.modalInfoValue}>{selectedMember.age}</Text>
+                    <Text style={[td.modalInfoLabel, { color: MUTED }]}>Age</Text>
+                    <Text style={[td.modalInfoValue, { color: TEXT }]}>{selectedMember.age}</Text>
                   </View>
                 </View>
               ) : null}
               {selectedMember.gender ? (
-                <View style={[td.modalInfoRow, { borderBottomWidth: 0 }]}>
+                <View style={[td.modalInfoRow, { borderBottomWidth: 0, borderBottomColor: SURFACE }]}>
                   <View style={td.modalInfoIcon}><Ionicons name="person-circle-outline" size={14} color="#818CF8" /></View>
                   <View>
-                    <Text style={td.modalInfoLabel}>Gender</Text>
-                    <Text style={td.modalInfoValue}>{selectedMember.gender}</Text>
+                    <Text style={[td.modalInfoLabel, { color: MUTED }]}>Gender</Text>
+                    <Text style={[td.modalInfoValue, { color: TEXT }]}>{selectedMember.gender}</Text>
                   </View>
                 </View>
               ) : null}
             </View>
           )}
-          <TouchableOpacity style={td.modalCloseBtn} onPress={() => setSelectedMember(null)}>
-            <Text style={td.modalCloseBtnText}>Close</Text>
+          <TouchableOpacity style={[td.modalCloseBtn, { backgroundColor: BORDER }]} onPress={() => setSelectedMember(null)}>
+            <Text style={[td.modalCloseBtnText, { color: TEXT }]}>Close</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -950,13 +950,13 @@ function TeacherDashboard() {
     return (
       <Modal visible transparent animationType="slide" onRequestClose={() => setSelectedTask(null)}>
         <View style={td.modalOverlay}>
-          <View style={td.modalSheet}>
-            <View style={td.modalHandle} />
+          <View style={[td.modalSheet, { backgroundColor: SURFACE }]}>
+            <View style={[td.modalHandle, { backgroundColor: BORDER }]} />
             <View style={[td.modalAccentStrip, { backgroundColor: priorityColor }]} />
             <View style={td.modalHeader}>
               <View style={{ flex: 1 }}>
-                <Text style={td.modalTitle}>{t.title}</Text>
-                <Text style={td.modalSubject}>{t.subject}</Text>
+                <Text style={[td.modalTitle, { color: TEXT }]}>{t.title}</Text>
+                <Text style={[td.modalSubject, { color: MUTED }]}>{t.subject}</Text>
               </View>
               <View style={[td.priorityPill, { backgroundColor: priorityColor + '22', alignSelf: 'flex-start' }]}>
                 <Text style={[td.priorityPillText, { color: priorityColor }]}>{t.priority}</Text>
@@ -966,42 +966,42 @@ function TeacherDashboard() {
               <Ionicons name={t.done ? 'checkmark-circle' : 'time-outline'} size={14} color={t.done ? '#10B981' : '#EC4899'} />
               <Text style={[td.modalStatusText, { color: t.done ? '#10B981' : '#EC4899' }]}>{t.done ? 'Completed' : 'Pending'}</Text>
             </View>
-            <View style={td.modalInfoBox}>
+            <View style={[td.modalInfoBox, { backgroundColor: BG }]}>
               {t.due ? (
                 <View style={[td.modalInfoRow, { borderBottomWidth: 0 }]}>
                   <View style={td.modalInfoIcon}><Ionicons name="calendar-outline" size={14} color="#818CF8" /></View>
                   <View>
-                    <Text style={td.modalInfoLabel}>Due Date</Text>
-                    <Text style={td.modalInfoValue}>{t.due}{(t as any).time ? `  ·  ${(t as any).time}` : ''}</Text>
+                    <Text style={[td.modalInfoLabel, { color: MUTED }]}>Due Date</Text>
+                    <Text style={[td.modalInfoValue, { color: TEXT }]}>{t.due}{(t as any).time ? `  ·  ${(t as any).time}` : ''}</Text>
                   </View>
                 </View>
               ) : null}
               {!t.isGroup && t.ownerName ? (
-                <View style={td.modalInfoRow}>
+                <View style={[td.modalInfoRow, { borderBottomColor: SURFACE }]}>
                   <View style={td.modalInfoIcon}><Ionicons name="person-circle-outline" size={14} color="#818CF8" /></View>
                   <View>
-                    <Text style={td.modalInfoLabel}>Student</Text>
-                    <Text style={td.modalInfoValue}>{t.ownerName}</Text>
+                    <Text style={[td.modalInfoLabel, { color: MUTED }]}>Student</Text>
+                    <Text style={[td.modalInfoValue, { color: TEXT }]}>{t.ownerName}</Text>
                   </View>
                 </View>
               ) : null}
               {t.isGroup ? (
-                <View style={td.modalInfoRow}>
+                <View style={[td.modalInfoRow, { borderBottomColor: SURFACE }]}>
                   <View style={td.modalInfoIcon}><Ionicons name="person-outline" size={14} color="#818CF8" /></View>
                   <View>
-                    <Text style={td.modalInfoLabel}>Assigned To</Text>
-                    <Text style={[td.modalInfoValue, !t.assignedToName && { color: '#475569' }]}>
+                    <Text style={[td.modalInfoLabel, { color: MUTED }]}>Assigned To</Text>
+                    <Text style={[td.modalInfoValue, { color: TEXT }, !t.assignedToName && { color: MUTED }]}>
                       {t.assignedToName ? `@${t.assignedToName}` : 'Unassigned'}
                     </Text>
                   </View>
                 </View>
               ) : null}
               {t.isGroup && (t as any).createdByName ? (
-                <View style={td.modalInfoRow}>
+                <View style={[td.modalInfoRow, { borderBottomColor: SURFACE }]}>
                   <View style={td.modalInfoIcon}><Ionicons name="create-outline" size={14} color="#818CF8" /></View>
                   <View>
-                    <Text style={td.modalInfoLabel}>Created By</Text>
-                    <Text style={td.modalInfoValue}>{(t as any).createdByName}</Text>
+                    <Text style={[td.modalInfoLabel, { color: MUTED }]}>Created By</Text>
+                    <Text style={[td.modalInfoValue, { color: TEXT }]}>{(t as any).createdByName}</Text>
                   </View>
                 </View>
               ) : null}
@@ -1009,14 +1009,14 @@ function TeacherDashboard() {
                 <View style={[td.modalInfoRow, { flexDirection: 'column', gap: 6 }]}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                     <View style={td.modalInfoIcon}><Ionicons name="document-text-outline" size={14} color="#818CF8" /></View>
-                    <Text style={td.modalInfoLabel}>Description</Text>
+                    <Text style={[td.modalInfoLabel, { color: MUTED }]}>Description</Text>
                   </View>
-                  <Text style={[td.modalInfoValue, { color: '#94A3B8', fontWeight: '400', lineHeight: 20, paddingLeft: 2 }]}>{(t as any).description}</Text>
+                  <Text style={[td.modalInfoValue, { color: MUTED, fontWeight: '400', lineHeight: 20, paddingLeft: 2 }]}>{(t as any).description}</Text>
                 </View>
               ) : null}
             </View>
-            <TouchableOpacity style={td.modalCloseBtn} onPress={() => setSelectedTask(null)}>
-              <Text style={td.modalCloseBtnText}>Close</Text>
+            <TouchableOpacity style={[td.modalCloseBtn, { backgroundColor: BORDER }]} onPress={() => setSelectedTask(null)}>
+              <Text style={[td.modalCloseBtnText, { color: TEXT }]}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -1031,31 +1031,31 @@ function TeacherDashboard() {
     return (
       <SafeAreaView style={th.safe} edges={['top']}>
         {/* Group header */}
-        <View style={td.groupHeader}>
-          <TouchableOpacity onPress={() => { setActiveGroup(null); setGroupTasks([]); }} style={td.backBtn}>
-            <Ionicons name="arrow-back" size={20} color="#F1F5F9" />
+        <View style={[td.groupHeader, { backgroundColor: SURFACE, borderBottomColor: BORDER }]}>
+          <TouchableOpacity onPress={() => { setActiveGroup(null); setGroupTasks([]); }} style={[td.backBtn, { backgroundColor: BG }]}>
+            <Ionicons name="arrow-back" size={20} color={TEXT} />
           </TouchableOpacity>
           <View style={{ flex: 1 }}>
-            <Text style={td.groupHeaderTitle} numberOfLines={1}>{activeGroup.name}</Text>
-            <Text style={td.groupHeaderSub}>{activeGroup.members.length} members · by {activeGroup.ownerName}</Text>
+            <Text style={[td.groupHeaderTitle, { color: TEXT }]} numberOfLines={1}>{activeGroup.name}</Text>
+            <Text style={[td.groupHeaderSub, { color: MUTED }]}>{activeGroup.members.length} members · by {activeGroup.ownerName}</Text>
           </View>
           <View style={td.readOnlyBadge}><Text style={td.readOnlyText}>Read-only</Text></View>
         </View>
 
         {/* Progress bar */}
-        <View style={td.progressWrap}>
-          <View style={td.progressTrack}>
+        <View style={[td.progressWrap, { backgroundColor: BG }]}>
+          <View style={[td.progressTrack, { backgroundColor: SURFACE }]}>
             <View style={[td.progressBar, { width: `${completion}%` as any }]} />
           </View>
-          <Text style={td.progressLabel}>{done}/{groupTasks.length} done · {completion}%</Text>
+          <Text style={[td.progressLabel, { color: MUTED }]}>{done}/{groupTasks.length} done · {completion}%</Text>
         </View>
 
         {/* Sub-tabs */}
-        <View style={td.subTabRow}>
+        <View style={[td.subTabRow, { backgroundColor: SURFACE, borderBottomColor: BORDER }]}>
           {(['tasks', 'members'] as const).map(t => (
             <TouchableOpacity key={t} style={[td.subTab, groupTab === t && td.subTabActive]} onPress={() => setGroupTab(t)}>
-              <Ionicons name={t === 'tasks' ? 'checkbox-outline' : 'people-outline'} size={15} color={groupTab === t ? '#818CF8' : '#475569'} />
-              <Text style={[td.subTabText, groupTab === t && td.subTabTextActive]}>
+              <Ionicons name={t === 'tasks' ? 'checkbox-outline' : 'people-outline'} size={15} color={groupTab === t ? '#818CF8' : MUTED} />
+              <Text style={[td.subTabText, { color: MUTED }, groupTab === t && td.subTabTextActive]}>
                 {t === 'tasks' ? 'Tasks' : 'Members'}
               </Text>
             </TouchableOpacity>
@@ -1065,9 +1065,9 @@ function TeacherDashboard() {
         <ScrollView style={th.screen} contentContainerStyle={td.listContent} showsVerticalScrollIndicator={false}>
           {groupTab === 'tasks' && (
             groupTasks.length === 0
-              ? <View style={td.emptyWrap}><Ionicons name="checkbox-outline" size={36} color="#334155" /><Text style={td.emptyText}>No tasks yet in this group.</Text></View>
+              ? <View style={td.emptyWrap}><Ionicons name="checkbox-outline" size={36} color={BORDER} /><Text style={[td.emptyText, { color: MUTED }]}>No tasks yet in this group.</Text></View>
               : groupTasks.map(task => (
-                <TouchableOpacity key={task.id} style={td.taskCard} activeOpacity={0.75}
+                <TouchableOpacity key={task.id} style={[td.taskCard, { backgroundColor: SURFACE }]} activeOpacity={0.75}
                   onPress={() => setSelectedTask({ ...task, isGroup: true } as any)}>
                   <View style={[td.taskCardAccent, { backgroundColor: PC[task.priority] }]} />
                   <View style={{ flex: 1, gap: 4 }}>
@@ -1075,9 +1075,9 @@ function TeacherDashboard() {
                       <View style={[td.taskDot, { backgroundColor: task.done ? '#10B981' : '#334155' }]}>
                         {task.done && <Ionicons name="checkmark" size={10} color="#fff" />}
                       </View>
-                      <Text style={[td.taskCardTitle, task.done && td.taskCardDone]} numberOfLines={1}>{task.title}</Text>
+                      <Text style={[td.taskCardTitle, { color: TEXT }, task.done && td.taskCardDone]} numberOfLines={1}>{task.title}</Text>
                     </View>
-                    <Text style={td.taskCardMeta}>{task.subject}</Text>
+                    <Text style={[td.taskCardMeta, { color: MUTED }]}>{task.subject}</Text>
                     <View style={td.taskCardRow}>
                       <View style={td.taskCardChip}>
                         <Ionicons name="calendar-outline" size={10} color="#475569" />
@@ -1100,21 +1100,21 @@ function TeacherDashboard() {
 
           {groupTab === 'members' && (
             activeGroup.members.length === 0
-              ? <View style={td.emptyWrap}><Text style={td.emptyText}>No members.</Text></View>
+              ? <View style={td.emptyWrap}><Text style={[td.emptyText, { color: MUTED }]}>No members.</Text></View>
               : activeGroup.members.map((m, idx) => (
-                <TouchableOpacity key={m.uid} style={td.memberCard} activeOpacity={0.75}
+                <TouchableOpacity key={m.uid} style={[td.memberCard, { backgroundColor: SURFACE }]} activeOpacity={0.75}
                   onPress={() => openMemberProfile(m.uid, m.displayName, m.email)}>
                   <View style={[td.memberAvatar, { backgroundColor: GC[idx % GC.length] }]}>
                     <Text style={td.memberAvatarText}>{m.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)}</Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={td.memberName}>{m.displayName}</Text>
-                    <Text style={td.memberEmail}>{m.email}</Text>
+                    <Text style={[td.memberName, { color: TEXT }]}>{m.displayName}</Text>
+                    <Text style={[td.memberEmail, { color: MUTED }]}>{m.email}</Text>
                   </View>
                   <View style={{ flexDirection: 'row', gap: 6, alignItems: 'center' }}>
                     {m.uid === activeGroup.ownerUid && <View style={td.ownerBadge}><Text style={td.ownerBadgeText}>Owner</Text></View>}
                     {m.uid === user?.uid && <View style={td.youBadge}><Text style={td.youBadgeText}>You</Text></View>}
-                    <Ionicons name="chevron-forward" size={14} color="#334155" />
+                    <Ionicons name="chevron-forward" size={14} color={BORDER} />
                   </View>
                 </TouchableOpacity>
               ))
@@ -1131,10 +1131,10 @@ function TeacherDashboard() {
     <SafeAreaView style={th.safe} edges={['top']}>
 
       {/* Header */}
-      <View style={td.mainHeader}>
+      <View style={[td.mainHeader, { backgroundColor: BG }]}>
         <View>
-          <Text style={td.mainGreeting}>{getGreeting()}</Text>
-          <Text style={td.mainTitle}>Teacher Dashboard</Text>
+          <Text style={[td.mainGreeting, { color: MUTED }]}>{getGreeting()}</Text>
+          <Text style={[td.mainTitle, { color: TEXT }]}>Teacher Dashboard</Text>
         </View>
         <Pressable style={td.avatar} onPress={() => router.push('/(tabs)/profile' as any)}>
           <Text style={td.avatarText}>
@@ -1144,32 +1144,32 @@ function TeacherDashboard() {
       </View>
 
       {/* Stat row */}
-      <View style={td.statRow}>
+      <View style={[td.statRow, { backgroundColor: SURFACE }]}>
         <View style={td.statBox}>
           <Text style={[td.statNum, { color: '#818CF8' }]}>{students.length}</Text>
-          <Text style={td.statLbl}>Students</Text>
+          <Text style={[td.statLbl, { color: MUTED }]}>Students</Text>
         </View>
-        <View style={td.statDivider} />
+        <View style={[td.statDivider, { backgroundColor: BORDER }]} />
         <View style={td.statBox}>
           <Text style={[td.statNum, { color: '#EC4899' }]}>{pendingCount}</Text>
-          <Text style={td.statLbl}>Pending</Text>
+          <Text style={[td.statLbl, { color: MUTED }]}>Pending</Text>
         </View>
-        <View style={td.statDivider} />
+        <View style={[td.statDivider, { backgroundColor: BORDER }]} />
         <View style={td.statBox}>
           <Text style={[td.statNum, { color: '#10B981' }]}>{allTasks.filter(t=>t.done).length}</Text>
-          <Text style={td.statLbl}>Done</Text>
+          <Text style={[td.statLbl, { color: MUTED }]}>Done</Text>
         </View>
-        <View style={td.statDivider} />
+        <View style={[td.statDivider, { backgroundColor: BORDER }]} />
         <View style={td.statBox}>
           <Text style={[td.statNum, { color: '#A78BFA' }]}>{allGroups.length}</Text>
-          <Text style={td.statLbl}>Groups</Text>
+          <Text style={[td.statLbl, { color: MUTED }]}>Groups</Text>
         </View>
       </View>
 
       {/* Main tabs */}
-      <View style={td.mainTabRow}>
+      <View style={[td.mainTabRow, { backgroundColor: SURFACE }]}>
         {(['tasks', 'groups', 'students'] as const).map(t => (
-          <TouchableOpacity key={t} style={[td.mainTab, tab === t && td.mainTabActive]} onPress={() => setTab(t)}>
+          <TouchableOpacity key={t} style={[td.mainTab, tab === t && [td.mainTabActive, { backgroundColor: BG }]]} onPress={() => setTab(t)}>
             <Ionicons
               name={t === 'tasks' ? 'clipboard-outline' : t === 'groups' ? 'people-outline' : 'school-outline'}
               size={15}
@@ -1188,8 +1188,8 @@ function TeacherDashboard() {
           {/* Filter pills */}
           <View style={td.filterRow}>
             {(['all', 'pending', 'done'] as const).map(f => (
-              <TouchableOpacity key={f} style={[td.filterPill, taskFilter === f && td.filterPillActive]} onPress={() => setTaskFilter(f)}>
-                <Text style={[td.filterPillText, taskFilter === f && td.filterPillTextActive]}>
+              <TouchableOpacity key={f} style={[td.filterPill, { borderColor: BORDER }, taskFilter === f && td.filterPillActive]} onPress={() => setTaskFilter(f)}>
+                <Text style={[td.filterPillText, { color: MUTED }, taskFilter === f && td.filterPillTextActive]}>
                   {f === 'all' ? `All  ${allTasks.length}` : f === 'pending' ? `Pending  ${pendingCount}` : `Done  ${allTasks.length - pendingCount}`}
                 </Text>
               </TouchableOpacity>
@@ -1197,9 +1197,9 @@ function TeacherDashboard() {
           </View>
 
           {filteredTasks.length === 0
-            ? <View style={td.emptyWrap}><Ionicons name="clipboard-outline" size={36} color="#334155" /><Text style={td.emptyText}>No tasks found.</Text></View>
+            ? <View style={td.emptyWrap}><Ionicons name="clipboard-outline" size={36} color={BORDER} /><Text style={[td.emptyText, { color: MUTED }]}>No tasks found.</Text></View>
             : filteredTasks.map(task => (
-              <TouchableOpacity key={task.id} style={td.taskCard} activeOpacity={0.75}
+              <TouchableOpacity key={task.id} style={[td.taskCard, { backgroundColor: SURFACE }]} activeOpacity={0.75}
                 onPress={() => setSelectedTask({ ...task, ownerName: studentMap[task.userId] || 'Unknown' })}>
                 <View style={[td.taskCardAccent, { backgroundColor: PC[task.priority] }]} />
                 <View style={{ flex: 1, gap: 4 }}>
@@ -1207,9 +1207,9 @@ function TeacherDashboard() {
                     <View style={[td.taskDot, { backgroundColor: task.done ? '#10B981' : '#334155' }]}>
                       {task.done && <Ionicons name="checkmark" size={10} color="#fff" />}
                     </View>
-                    <Text style={[td.taskCardTitle, task.done && td.taskCardDone]} numberOfLines={1}>{task.title}</Text>
+                    <Text style={[td.taskCardTitle, { color: TEXT }, task.done && td.taskCardDone]} numberOfLines={1}>{task.title}</Text>
                   </View>
-                  <Text style={td.taskCardMeta}>{task.subject}{task.due ? ` · Due ${task.due}` : ''}</Text>
+                  <Text style={[td.taskCardMeta, { color: MUTED }]}>{task.subject}{task.due ? ` · Due ${task.due}` : ''}</Text>
                   <View style={td.taskCardRow}>
                     <View style={td.studentChip}>
                       <Ionicons name="person-circle-outline" size={12} color="#6366F1" />
@@ -1230,21 +1230,21 @@ function TeacherDashboard() {
       {tab === 'groups' && (
         <ScrollView style={th.screen} contentContainerStyle={td.listContent} showsVerticalScrollIndicator={false}>
           {allGroups.length === 0
-            ? <View style={td.emptyWrap}><Ionicons name="people-outline" size={36} color="#334155" /><Text style={td.emptyText}>No groups yet.</Text></View>
+            ? <View style={td.emptyWrap}><Ionicons name="people-outline" size={36} color={BORDER} /><Text style={[td.emptyText, { color: MUTED }]}>No groups yet.</Text></View>
             : allGroups.map((g, idx) => (
-              <TouchableOpacity key={g.id} style={td.groupCard} onPress={() => { setActiveGroup(g); setGroupTab('tasks'); }} activeOpacity={0.75}>
+              <TouchableOpacity key={g.id} style={[td.groupCard, { backgroundColor: SURFACE }]} onPress={() => { setActiveGroup(g); setGroupTab('tasks'); }} activeOpacity={0.75}>
                 <View style={[td.groupCardIcon, { backgroundColor: GC[idx % GC.length] + '22' }]}>
                   <Ionicons name="people" size={20} color={GC[idx % GC.length]} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={td.groupCardName}>{g.name}</Text>
-                  <Text style={td.groupCardSub}>Owner: {g.ownerName}</Text>
+                  <Text style={[td.groupCardName, { color: TEXT }]}>{g.name}</Text>
+                  <Text style={[td.groupCardSub, { color: MUTED }]}>Owner: {g.ownerName}</Text>
                   <View style={td.groupCardMemberRow}>
                     <Ionicons name="person-outline" size={11} color="#475569" />
                     <Text style={td.groupCardMemberText}>{g.members.length} member{g.members.length !== 1 ? 's' : ''}</Text>
                   </View>
                 </View>
-                <Ionicons name="chevron-forward" size={18} color="#334155" />
+                <Ionicons name="chevron-forward" size={18} color={BORDER} />
               </TouchableOpacity>
             ))
           }
@@ -1255,19 +1255,19 @@ function TeacherDashboard() {
       {tab === 'students' && (
         <ScrollView style={th.screen} contentContainerStyle={td.listContent} showsVerticalScrollIndicator={false}>
           {students.length === 0
-            ? <View style={td.emptyWrap}><Ionicons name="school-outline" size={36} color="#334155" /><Text style={td.emptyText}>No students registered yet.</Text></View>
+            ? <View style={td.emptyWrap}><Ionicons name="school-outline" size={36} color={BORDER} /><Text style={[td.emptyText, { color: MUTED }]}>No students registered yet.</Text></View>
             : students.map((st, idx) => (
-              <TouchableOpacity key={st.id} style={td.memberCard} activeOpacity={0.75}
+              <TouchableOpacity key={st.id} style={[td.memberCard, { backgroundColor: SURFACE }]} activeOpacity={0.75}
                 onPress={() => openMemberProfile(st.id, st.displayName, st.email)}>
                 <View style={[td.memberAvatar, { backgroundColor: GC[idx % GC.length] }]}>
                   <Text style={td.memberAvatarText}>{st.displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0,2)}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={td.memberName}>{st.displayName}</Text>
-                  <Text style={td.memberEmail}>{st.email}</Text>
+                  <Text style={[td.memberName, { color: TEXT }]}>{st.displayName}</Text>
+                  <Text style={[td.memberEmail, { color: MUTED }]}>{st.email}</Text>
                   {st.username ? <Text style={[td.memberEmail, { color: '#6366F1', marginTop: 2 }]}>@{st.username}</Text> : null}
                 </View>
-                <Ionicons name="chevron-forward" size={16} color="#334155" />
+                <Ionicons name="chevron-forward" size={16} color={BORDER} />
               </TouchableOpacity>
             ))
           }

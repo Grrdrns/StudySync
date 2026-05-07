@@ -5,17 +5,17 @@ import * as Location from 'expo-location';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 
 const GENDERS = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
@@ -155,11 +155,21 @@ export default function SignupScreen() {
       const selectedRole = role || 'student';
       console.log('Signing up with role:', selectedRole);
       
-      await signUp(email.trim(), password, fullName.trim(), username.trim(), {
+      const result = await signUp(email.trim(), password, fullName.trim(), username.trim(), {
         age: age ? parseInt(age) : null,
         gender,
         address,
       }, selectedRole);
+
+      if (result.verificationSent) {
+        Alert.alert(
+          'Verify Your Email',
+          'A verification link has been sent to your email address. Please verify your email before logging in.',
+          [{ text: 'OK', onPress: () => router.replace('/(auth)/login' as any) }]
+        );
+        return;
+      }
+
       router.replace('/(tabs)');
     } catch (error: any) {
       Alert.alert(

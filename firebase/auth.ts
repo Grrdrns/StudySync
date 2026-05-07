@@ -6,6 +6,7 @@ import {
     GoogleAuthProvider,
     onAuthStateChanged,
     reauthenticateWithCredential,
+    sendEmailVerification,
     sendPasswordResetEmail,
     signInWithCredential,
     signInWithEmailAndPassword,
@@ -35,6 +36,7 @@ export interface UserProfile {
   displayName: string;
   username: string;
   role: UserRole;
+  emailVerified?: boolean;
   age?: number | null;
   gender?: string;
   address?: string;
@@ -72,12 +74,20 @@ export async function signUp(
     displayName,
     username: username.toLowerCase(),
     role, // student or teacher only (admin is pre-assigned)
+    emailVerified: role === 'teacher' ? false : true,
     ...additionalData,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
+
+  // Send email verification for teacher accounts
+  if (role === 'teacher') {
+    await sendEmailVerification(userCredential.user);
+    // Sign out the teacher so they must verify before logging in
+    await signOut(auth);
+  }
   
-  return userCredential.user;
+  return { user: userCredential.user, verificationSent: role === 'teacher' };
 }
 
 // Get user profile with role
@@ -96,6 +106,24 @@ export async function signIn(email: string, password: string) {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     console.log('✅ Firebase signIn successful:', userCredential.user.email);
     console.log('👤 User UID:', userCredential.user.uid);
+
+    // Check if the user is a teacher and if their email is verified
+    const profile = await getUserProfile(userCredential.user.uid);
+    if (profile?.role === 'teacher' && !userCredential.user.emailVerified) {
+      // Resend verification email in case it expired
+      await sendEmailVerification(userCredential.user);
+      await signOut(auth);
+      throw new Error('Please verify your email before logging in. A new verification link has been sent to your email.');
+    }
+
+    // Update emailVerified in Firestore if teacher has now verified
+    if (profile?.role === 'teacher' && userCredential.user.emailVerified && profile.emailVerified === false) {
+      await updateDoc(doc(db, 'users', userCredential.user.uid), {
+        emailVerified: true,
+        updatedAt: serverTimestamp(),
+      });
+    }
+
     return userCredential.user;
   } catch (error: any) {
     console.error('❌ Firebase signIn error:', error);
